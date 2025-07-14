@@ -30,7 +30,7 @@
 #include <errno.h>      // errno, EAGAIN, EWOULDBLOCK
 #include <csignal>      // std::signal, SIGINT, SIGTERM
 
-#define IRC_BUFFER_SIZE 1024
+#define IRC_BUFFER_SIZE 512
 #define COMMAND_DELIMITER "\r\n"
 
 

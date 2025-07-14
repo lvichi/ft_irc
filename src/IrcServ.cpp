@@ -141,11 +141,11 @@ void handleSigint(int)
 
 std::string IrcServ::handleClientInput( pollfd& clientFD )
 {
-  char          buffer[IRC_BUFFER_SIZE];
+  char          buffer[IRC_BUFFER_SIZE + 1];
   int           bytesRead;
   std::string   message;
 
-  bytesRead = read( clientFD.fd, buffer, sizeof(buffer) - 1 );
+  bytesRead = read( clientFD.fd, buffer, IRC_BUFFER_SIZE );
 
   if ( bytesRead <= 0  ) {
     if ( bytesRead < 0 )
@@ -162,11 +162,28 @@ std::string IrcServ::handleClientInput( pollfd& clientFD )
 
   fdBuffers[clientFD.fd] += std::string(buffer, bytesRead);
 
-  if ( fdBuffers[clientFD.fd].size() > 2 &&
-         std::equal( fdBuffers[clientFD.fd].end() - 2, fdBuffers[clientFD.fd].end(), "\r\n" ) ) {
-    message = fdBuffers[clientFD.fd];
-    fdBuffers[clientFD.fd].clear();
+  while ( true ) {
+    unsigned int pos = fdBuffers[clientFD.fd].find("\r\n");
+    if ( pos > fdBuffers[clientFD.fd].size() )
+      break;
+
+    if ( pos + 2 > IRC_BUFFER_SIZE ) {
+      std::cerr << "Error: Command too long. fd: " << clientFD.fd << std::endl;
+      fdBuffers[clientFD.fd].erase( 0, pos + 2 );
+      continue;
     }
+
+    message += fdBuffers[clientFD.fd].substr( 0, pos + 2);
+    fdBuffers[clientFD.fd].erase( 0, pos + 2 );
+  }
+
+  if ( fdBuffers[clientFD.fd].size() > IRC_BUFFER_SIZE ) {
+    std::cerr << "Error: Buffer overflow. fd: " << clientFD.fd << std::endl;
+    std::cout << "Closed connection. fd: " << clientFD.fd << std::endl;
+    fdBuffers[clientFD.fd].clear();
+    close( clientFD.fd );
+    clientFD.fd = -1;
+  }
 
   return message;
 }
