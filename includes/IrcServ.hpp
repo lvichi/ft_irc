@@ -49,6 +49,7 @@ class IrcServ
 
     struct CommandStruct
     {
+      unsigned int                        clientFD;
       std::string                         prefix;
       std::string                         command;
       std::vector<std::string>            parameters;
@@ -56,33 +57,10 @@ class IrcServ
     };
     std::deque<CommandStruct>             commands;
 
-    struct ClientStruct
-    {
-      int                                 fd;
-      std::string                         nickName;
-      std::string                         userName;
-      bool                                authenticated;
-      std::vector<std::string>            joinedChannels;
-    };
-    std::list<ClientStruct>               clients;
-
-    struct ChannelStruct
-    {
-      std::string                         name;
-      std::string                         topic;
-      std::vector<std::string>            members;
-      std::vector<std::string>            operators;
-      std::string                         channelKey;
-      int                                 userLimit;
-      bool                                inviteOnly;
-      bool                                topicRestricted;
-    };
-    std::list<ChannelStruct>              channels;
-
     int             createServerSocket();
     int             connectClient();
     std::string     handleClientInput( pollfd& clientFD );
-    void            parseCommands( std::string& message );
+    void            parseCommands( std::string& message, unsigned int clientFD );
     void            executeCommands();
     void            sendMessages();
 

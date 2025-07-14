@@ -14,6 +14,7 @@
 
   struct CommandStruct
   {
+    unsigned int              clientFD;    // Client file descriptor
     std::string               prefix;       // Optional prefix (starts with :)
     std::string               command;      // IRC command (e.g., NICK, USER, PRIVMSG)
     std::vector<std::string>  parameters;   // Parameters (excluding trailing)
@@ -25,7 +26,7 @@
 // The message can contain multiple commands separated by '\r\n'.
 // this is a simplified version for demonstration purposes and test of
 // the IrcServ class.
-void IrcServ::parseCommands( std::string& message )
+void IrcServ::parseCommands( std::string& message, unsigned int clientFD )
 {
   CommandStruct     cmd;
   std::string   eoc = COMMAND_DELIMITER;
@@ -43,6 +44,7 @@ void IrcServ::parseCommands( std::string& message )
 
     std::string commandLine( it, endOfCommand );
 
+    cmd.clientFD = clientFD;
     cmd.command = "PRIVMSG";
     cmd.prefix = "";
     cmd.parameters.push_back( "#all" );

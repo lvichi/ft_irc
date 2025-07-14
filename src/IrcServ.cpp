@@ -55,7 +55,7 @@ int IrcServ::runServer()
         if ( message.empty() )
           continue;
 
-        parseCommands( message );
+        parseCommands( message, it->fd );
 
         executeCommands();
       }
@@ -180,6 +180,7 @@ void  IrcServ::printCommands()
 
     CommandStruct& cmd = *it;
     std::cout << "Commands[" << i++ << "] :" << std::endl
+              << "  Client FD: " << cmd.clientFD << std::endl
               << "  Prefix: " << cmd.prefix << std::endl
               << "  Command: " << cmd.command << std::endl
               << "  Parameters: ";
