@@ -31,6 +31,13 @@ void IrcServ::executeCommands()
 {
   printCommands();
 
+  for ( std::deque<CommandStruct>::iterator it = commands.begin(); it != commands.end(); ++it ) {
+    std::stringstream   ss;
+    ss << "Responding message to client FD: " << it->clientFD
+       << " Message: " << it->trailing
+       << "\r\n";
+    outgoingMessages[ it->clientFD ] += ss.str();
+  }
+
   commands.clear();
 }
-

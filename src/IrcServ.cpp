@@ -39,7 +39,6 @@ int IrcServ::runServer()
     return 1;
 
   while ( !endServer ) {
-    std::cout << "\nWaiting for connections/messages ..." << std::endl << std::endl;
     poll( &poolFDs[0], poolFDs.size(), -1 );
 
     for ( std::vector<pollfd>::iterator it = poolFDs.begin(); it != poolFDs.end(); ++it ) {
@@ -59,6 +58,13 @@ int IrcServ::runServer()
 
         executeCommands();
       }
+
+      outgoingMessages.find( it->fd ) != outgoingMessages.end() ?
+         it->events = ( POLLOUT | POLLIN ) : it->events = POLLIN;
+
+      if ( it->revents & POLLOUT )
+        sendMessages(*it);
+
     }
   }
 
@@ -186,6 +192,38 @@ std::string IrcServ::handleClientInput( pollfd& clientFD )
   }
 
   return message;
+}
+
+
+void IrcServ::sendMessages( pollfd& clientFD )
+{
+  std::string&   buffer = outgoingMessages[clientFD.fd];
+  int            bytesSent;
+
+  if ( buffer.empty() ) {
+    outgoingMessages.erase( clientFD.fd );
+    return;
+  }
+
+  bytesSent = send( clientFD.fd, buffer.c_str(), buffer.size(), 0 );
+
+  if ( bytesSent <= 0 ) {
+    if ( errno != EAGAIN && errno != EWOULDBLOCK )
+      return
+
+    std::cerr << "Error sending message to client. fd: " << clientFD.fd << std::endl, void();
+    std::cout << "Closed connection. fd: " << clientFD.fd << std::endl;
+    outgoingMessages.erase( clientFD.fd  );
+    close( clientFD.fd );
+    clientFD.fd = -1;
+  }
+
+  buffer.erase( 0, bytesSent );
+
+  if ( buffer.empty() )
+    outgoingMessages.erase( clientFD.fd );
+
+  return;
 }
 
 

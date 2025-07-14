@@ -31,8 +31,6 @@ void IrcServ::parseCommands( std::string& message, unsigned int clientFD )
   CommandStruct     cmd;
   std::string   eoc = COMMAND_DELIMITER;
 
-  std::cout << "Parsing commands from message: " << message << std::endl;
-
   while ( true ) {
     std::string::iterator it = message.begin();
 

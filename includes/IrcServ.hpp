@@ -15,6 +15,7 @@
 
 #include <iostream>     // std::cerr std::cout std::endl
 #include <string>       // std::string
+#include <sstream>      // std::stringstream
 #include <cstdlib>      // std::strtod
 #include <vector>       // std::vector
 #include <map>          // std::map
@@ -62,7 +63,7 @@ class IrcServ
     std::string     handleClientInput( pollfd& clientFD );
     void            parseCommands( std::string& message, unsigned int clientFD );
     void            executeCommands();
-    void            sendMessages();
+    void            sendMessages( pollfd& clientFD );
 
     // DEBUG
     void            printCommands();
