@@ -57,9 +57,10 @@ void IrcServ::runServer()
         if ( message.empty() )
           continue;
 
+        // TO BE CORRECTLY IMPLEMENTED
         std::list<CommandStruct> commands = parseCommands( message, it->fd );
-
         executeCommands( commands, outgoingMessages );
+
       }
 
       outgoingMessages.find( it->fd ) != outgoingMessages.end() ?
