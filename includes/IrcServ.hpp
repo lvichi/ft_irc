@@ -60,7 +60,7 @@ class IrcServ
 
     std::deque<CommandStruct>             commands;
 
-    static void     handleSigint( int signal );
+    static void     handleSigint( int );
     void            createServerSocket();
     void            connectClient();
     std::string     handleClientInput( pollfd& clientFD );
@@ -75,5 +75,5 @@ class IrcServ
     IrcServ( const unsigned int port, const std::string& password );
     ~IrcServ();
 
-    int             runServer();
+    void            runServer();
 };
