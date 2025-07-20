@@ -29,6 +29,12 @@ IrcServ::~IrcServ()
 }
 
 
+void IrcServ::handleSigint( int )
+{
+  g_endServer = 1;
+}
+
+
 void IrcServ::runServer()
 {
   std::signal( SIGINT, handleSigint );
@@ -47,20 +53,20 @@ void IrcServ::runServer()
           break;
         }
 
-        std::string message = handleClientInput(*it);
+        std::string message = receiveMessages( *it );
         if ( message.empty() )
           continue;
 
-        parseCommands( message, it->fd );
+        std::list<CommandStruct> commands = parseCommands( message, it->fd );
 
-        executeCommands();
+        executeCommands( commands, outgoingMessages );
       }
 
       outgoingMessages.find( it->fd ) != outgoingMessages.end() ?
          it->events = ( POLLOUT | POLLIN ) : it->events = POLLIN;
 
       if ( it->revents & POLLOUT )
-        sendMessages(*it);
+        sendMessages( *it );
     }
   }
   std::cout << "\rServer shutting down." << std::endl;
@@ -69,7 +75,7 @@ void IrcServ::runServer()
 
 void IrcServ::createServerSocket()
 {
-  pollfd serverFD = {};
+  pollfd serverFD;
 
   serverFD.fd = socket( AF_INET, SOCK_STREAM, 0 );
 
@@ -77,6 +83,7 @@ void IrcServ::createServerSocket()
     throw std::runtime_error( "Error creating socket." );
 
   serverFD.events = POLLIN;
+  serverFD.revents = 0;
 
   fcntl( serverFD.fd, F_SETFL, O_NONBLOCK );
 
@@ -89,10 +96,10 @@ void IrcServ::createServerSocket()
   if ( setsockopt( serverFD.fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof( int ) ) < 0 )
     throw std::runtime_error( "Error setting socket options." );
 
-  if ( bind(serverFD.fd, ( struct sockaddr* )&addr4, sizeof( addr4 ) ) < 0 )
+  if ( bind( serverFD.fd, ( struct sockaddr* )&addr4, sizeof( addr4 ) ) < 0 )
     throw std::runtime_error( "Error binding socket." );
 
-  if ( listen(serverFD.fd, 5 ) < 0 )
+  if ( listen( serverFD.fd, 5 ) < 0 )
     throw std::runtime_error( "Error listening on socket." );
 
   std::cout << "Server listening on port " << port << std::endl;
@@ -103,15 +110,13 @@ void IrcServ::createServerSocket()
 
 void IrcServ::connectClient()
 {
-  struct sockaddr_in  addr4 = {};
+  struct sockaddr_in  addr4;
   pollfd              clientPollFD;
-  socklen_t           addrLen;
-
-  addrLen = sizeof(addr4);
+  socklen_t           addrLen = sizeof(addr4);
 
   int clientFD = accept( poolFDs[0].fd, (struct sockaddr*)&addr4, &addrLen );
 
-  if ( clientFD < 0 && errno != EAGAIN && errno != EWOULDBLOCK )
+  if ( clientFD < 0 )
     return;
 
   fcntl( clientFD, F_SETFL, O_NONBLOCK );
@@ -126,13 +131,19 @@ void IrcServ::connectClient()
 }
 
 
-void IrcServ::handleSigint( int )
+void IrcServ::closeClient( pollfd& clientFD )
 {
-  g_endServer = 1;
+  std::cout << "Closed client connection. fd: " << clientFD.fd << std::endl;
+
+  close( clientFD.fd );
+  fdBuffers.erase( clientFD.fd );
+  outgoingMessages.erase( clientFD.fd );
+
+  clientFD.fd = -1;
 }
 
 
-std::string IrcServ::handleClientInput( pollfd& clientFD )
+std::string IrcServ::receiveMessages( pollfd& clientFD )
 {
   char          buffer[IRC_BUFFER_SIZE + 1];
   int           bytesRead;
@@ -143,12 +154,8 @@ std::string IrcServ::handleClientInput( pollfd& clientFD )
   if ( bytesRead <= 0  ) {
     if ( bytesRead < 0 )
       std::cerr << "Error reading from client. fd: " << clientFD.fd << std::endl;
-    else
-      std::cout << "Client closed connection. fd: " << clientFD.fd << std::endl;
 
-    close( clientFD.fd );
-    fdBuffers[clientFD.fd].clear();
-    clientFD.fd = -1;
+    closeClient( clientFD );
 
     return message;
   }
@@ -172,10 +179,7 @@ std::string IrcServ::handleClientInput( pollfd& clientFD )
 
   if ( fdBuffers[clientFD.fd].size() > IRC_BUFFER_SIZE ) {
     std::cerr << "Error: Buffer overflow. fd: " << clientFD.fd << std::endl;
-    std::cout << "Closed connection. fd: " << clientFD.fd << std::endl;
-    fdBuffers[clientFD.fd].clear();
-    close( clientFD.fd );
-    clientFD.fd = -1;
+    closeClient( clientFD );
   }
 
   return message;
@@ -188,7 +192,7 @@ void IrcServ::sendMessages( pollfd& clientFD )
   int            bytesSent;
 
   if ( buffer.empty() ) {
-    outgoingMessages.erase( clientFD.fd );
+    closeClient( clientFD );
     return;
   }
 
@@ -199,10 +203,7 @@ void IrcServ::sendMessages( pollfd& clientFD )
       return
 
     std::cerr << "Error sending message to client. fd: " << clientFD.fd << std::endl, void();
-    std::cout << "Closed connection. fd: " << clientFD.fd << std::endl;
-    outgoingMessages.erase( clientFD.fd  );
-    close( clientFD.fd );
-    clientFD.fd = -1;
+    closeClient( clientFD );
   }
 
   buffer.erase( 0, bytesSent );
@@ -211,26 +212,4 @@ void IrcServ::sendMessages( pollfd& clientFD )
     outgoingMessages.erase( clientFD.fd );
 
   return;
-}
-
-
-void  IrcServ::printCommands()
-{
-  int i = 0;
-
-  for ( std::deque<CommandStruct>::iterator it = commands.begin(); it != commands.end(); ++it ) {
-
-    CommandStruct& cmd = *it;
-    std::cout << "Commands[" << i++ << "] :" << std::endl
-              << "  Client FD: " << cmd.clientFD << std::endl
-              << "  Prefix: " << cmd.prefix << std::endl
-              << "  Command: " << cmd.command << std::endl
-              << "  Parameters: ";
-
-    for ( std::vector<std::string>::iterator param = cmd.parameters.begin(); param != cmd.parameters.end(); ++param )
-      std::cout << *param << " ";
-    std::cout << std::endl;
-
-    std::cout << "  Trailing: " << cmd.trailing << std::endl;
-  }
 }
