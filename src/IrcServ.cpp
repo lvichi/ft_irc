@@ -31,22 +31,19 @@ IrcServ::~IrcServ()
 
 int IrcServ::runServer()
 {
-  std::string  message;
+  std::signal( SIGINT, handleSigint );
 
-  std::signal(SIGINT, handleSigint);
-
-  if ( createServerSocket() )
-    return 1;
+  createServerSocket();
 
   while ( !endServer ) {
     poll( &poolFDs[0], poolFDs.size(), -1 );
 
     for ( std::vector<pollfd>::iterator it = poolFDs.begin(); it != poolFDs.end(); ++it ) {
       if ( it->revents & POLLIN ) {
+        std::string  message;
 
         if ( it->fd == poolFDs[0].fd ) {
-          if ( connectClient() )
-            return 1;
+          connectClient();
           break;
         }
 
@@ -72,14 +69,14 @@ int IrcServ::runServer()
 }
 
 
-int IrcServ::createServerSocket()
+void IrcServ::createServerSocket()
 {
   pollfd serverFD = {};
 
   serverFD.fd = socket( AF_INET, SOCK_STREAM, 0 );
 
   if ( serverFD.fd < 0 )
-    return ( std::cerr << "Error creating socket." << std::endl, 1 );
+    throw std::runtime_error( "Error creating socket." );
 
   serverFD.events = POLLIN;
 
@@ -92,24 +89,21 @@ int IrcServ::createServerSocket()
 
   int yes = 1;
   if ( setsockopt( serverFD.fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof( int ) ) < 0 )
-    return ( std::cerr << "Error setting socket options." << std::endl, 1 );
+    throw std::runtime_error( "Error setting socket options." );
 
   if ( bind(serverFD.fd, ( struct sockaddr* )&addr4, sizeof( addr4 ) ) < 0 )
-    return ( std::cerr << "Error binding socket." << std::endl, 1 );
+    throw std::runtime_error( "Error binding socket." );
 
   if ( listen(serverFD.fd, 5 ) < 0 )
-    return ( std::cerr << "Error listening on socket." << std::endl, 1 );
-
+    throw std::runtime_error( "Error listening on socket." );
 
   std::cout << "Server listening on port " << port << std::endl;
 
   poolFDs.push_back( serverFD );
-
-  return 0;
 }
 
 
-int IrcServ::connectClient()
+void IrcServ::connectClient()
 {
   struct sockaddr_in  addr4 = {};
   pollfd              clientPollFD;
@@ -120,9 +114,7 @@ int IrcServ::connectClient()
   int clientFD = accept( poolFDs[0].fd, (struct sockaddr*)&addr4, &addrLen );
 
   if ( clientFD < 0 && errno != EAGAIN && errno != EWOULDBLOCK )
-    return ( std::cerr << "Error accepting connection." << std::endl, 1 );
-  if ( clientFD < 0 )
-    return 0;
+    return;
 
   fcntl( clientFD, F_SETFL, O_NONBLOCK );
 
@@ -133,13 +125,12 @@ int IrcServ::connectClient()
   poolFDs.push_back( clientPollFD );
 
   std::cout << "Client connected. fd: " << clientPollFD.fd << std::endl;
-
-  return 0;
 }
 
 
-void handleSigint(int)
+void IrcServ::handleSigint( int signal )
 {
+  ( void )signal;
   endServer = true;
   std::cout << "\rServer shutting down." << std::endl;
 }

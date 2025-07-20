@@ -21,6 +21,7 @@
 #include <map>          // std::map
 #include <deque>        // std::deque
 #include <list>         // std::list
+#include <stdexcept>    // std::runtime_error
 #include <algorithm>    // for std::equal
 #include <fcntl.h>      // fcntl, F_SETFL, O_NONBLOCK
 #include <poll.h>       // struct pollfd
@@ -56,10 +57,12 @@ class IrcServ
       std::vector<std::string>            parameters;
       std::string                         trailing;
     };
+
     std::deque<CommandStruct>             commands;
 
-    int             createServerSocket();
-    int             connectClient();
+    static void     handleSigint( int signal );
+    void            createServerSocket();
+    void            connectClient();
     std::string     handleClientInput( pollfd& clientFD );
     void            parseCommands( std::string& message, unsigned int clientFD );
     void            executeCommands();
@@ -72,11 +75,5 @@ class IrcServ
     IrcServ( const unsigned int port, const std::string& password );
     ~IrcServ();
 
-    int   runServer();
+    int             runServer();
 };
-
-
-int parseArguments( const int argc, char** argv, unsigned int* port, std::string* password );
-
-
-void handleSigint(int);
