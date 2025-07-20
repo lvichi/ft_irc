@@ -14,7 +14,7 @@
 #include "IrcServ.hpp"
 
 
-static bool endServer = false;
+volatile sig_atomic_t g_endServer = 0;
 
 
 IrcServ::IrcServ( unsigned int port, const std::string& password )
@@ -29,25 +29,25 @@ IrcServ::~IrcServ()
 }
 
 
-int IrcServ::runServer()
+void IrcServ::runServer()
 {
   std::signal( SIGINT, handleSigint );
 
   createServerSocket();
 
-  while ( !endServer ) {
+  while ( !g_endServer ) {
     poll( &poolFDs[0], poolFDs.size(), -1 );
 
-    for ( std::vector<pollfd>::iterator it = poolFDs.begin(); it != poolFDs.end(); ++it ) {
+    std::vector<pollfd>::iterator it;
+    for ( it = poolFDs.begin(); it != poolFDs.end(); ++it ) {
       if ( it->revents & POLLIN ) {
-        std::string  message;
 
         if ( it->fd == poolFDs[0].fd ) {
           connectClient();
           break;
         }
 
-        message = handleClientInput(*it);
+        std::string message = handleClientInput(*it);
         if ( message.empty() )
           continue;
 
@@ -61,11 +61,9 @@ int IrcServ::runServer()
 
       if ( it->revents & POLLOUT )
         sendMessages(*it);
-
     }
   }
-
-  return 0;
+  std::cout << "\rServer shutting down." << std::endl;
 }
 
 
@@ -128,11 +126,9 @@ void IrcServ::connectClient()
 }
 
 
-void IrcServ::handleSigint( int signal )
+void IrcServ::handleSigint( int )
 {
-  ( void )signal;
-  endServer = true;
-  std::cout << "\rServer shutting down." << std::endl;
+  g_endServer = 1;
 }
 
 

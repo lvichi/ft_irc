@@ -14,7 +14,7 @@
 #include "IrcServ.hpp"
 
 
-int parseArguments( const int argc, char** argv, unsigned int* port, std::string* password );
+void parseArguments( const int argc, char** argv, unsigned int* port, std::string* password );
 
 
 int main( int argc, char** argv )
@@ -22,40 +22,32 @@ int main( int argc, char** argv )
   unsigned int  port;
   std::string   password;
 
-  if ( parseArguments( argc, argv, &port, &password ) )
-    return 1;
-
-  IrcServ server( port , password );
-
   try {
-    if ( server.runServer() )
-      return 1;
+    parseArguments( argc, argv, &port, &password );
+    IrcServ server( port , password );
+    server.runServer();
   } catch ( std::exception& e ) {
     return ( std::cerr << e.what() << std::endl, 1 );
   }
-
-  return 0;
 }
 
 
-int parseArguments( int argc, char** argv, unsigned int* port, std::string* password )
+void parseArguments( int argc, char** argv, unsigned int* port, std::string* password )
 {
   char*    end = 0;
   double   portRaw;
 
   if ( argc != 3 )
-    return ( std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl, 1 );
+    throw std::runtime_error( "Usage: " + std::string(argv[0]) + " <port> <password>" );
 
   portRaw = std::strtod( argv[1], &end );
 
   if ( *end != 0 || portRaw < 1 || portRaw > 65535 )
-    return ( std::cerr << "Invalid port: " << argv[1] << std::endl, 1 );
+    throw std::runtime_error( "Invalid port: " + std::string(argv[1]) );
 
   if ( argv[2][0] == 0 )
-    return ( std::cerr << "Invalid password." << std::endl, 1 );
+    throw std::runtime_error( "Invalid password." );
 
   *port = static_cast<unsigned int>(portRaw);
   *password = argv[2];
-
-  return 0;
 }
