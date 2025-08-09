@@ -1,4 +1,29 @@
-#include "parseCommands.hpp"
+#include "../includes/parseCommands.hpp"
+
+//NOTES on IRC message params sanitizer:
+//prefix is optional, servernam or nick[!user]@host;
+//commands are ALWAYS upper case, but may cause issues with client and
+//may need to normalize to all capital letters
+//command can also be 3 digit numbers.
+//up to 15 parameters, last one is trailing with : may contain spaces after trailing sufix
+//tags need to re-read subject
+//CRLF must be present meaning \r\n;
+//NULL is always forbidden and CRLF must always come at the end;
+//0x01 can be supported for ctcp payload for PRIVMSG/NOTICE
+//prefix ALWAYS starts with : no spaces between servername or nick[!user]@host
+//ex. = :nick!user@host PRIVMSG #chat :hello world\r\n
+
+//notes on commands:
+//KICK: <#channel> <user> [<comment>]; channel exists, sender is in the channel
+//sender has operator privileges, +o;
+//target user is in the channel;
+//INVITE: <nick> <channel>; check if target nick exists, and is connected as client
+//check if channel has +i (invite only), case, sender must have +o operator privileges
+//if the channel does not exist, it is possible to create a new one;
+//TOPIC: <channel> [<topic>]; if channel mode +t is set need +o;
+//if topic is empty string, should clear topic
+//MODE: +i, +t, +k, +o, +l;
+//+k = keypassword; +l = user limit to channel;
 
 
 std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
