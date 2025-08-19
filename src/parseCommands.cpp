@@ -24,6 +24,8 @@
 //if topic is empty string, should clear topic
 //MODE: +i, +t, +k, +o, +l;
 //+k = keypassword; +l = user limit to channel;
+//PASS to be decided
+//NICK
 
 
 std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
