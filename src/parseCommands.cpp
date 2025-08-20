@@ -1,4 +1,5 @@
 #include "../includes/parseCommands.hpp"
+#include "../includes/macros.hpp"
 
 //NOTES on IRC message params sanitizer:
 //prefix is optional, servernam or nick[!user]@host;
@@ -32,7 +33,7 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
 {
   std::list<CommandStruct>  commands;
   CommandStruct             cmd;
-  std::string               eoc = COMMAND_DELIMITER;
+  std::string               eoc = CRLF;
 
   while ( true ) {
     std::string::iterator it = message.begin();
