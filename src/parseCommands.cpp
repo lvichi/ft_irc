@@ -28,6 +28,34 @@
 //PASS to be decided
 //NICK
 
+/*struct CommandStruct
+{
+  unsigned int                        clientFD;
+  std::string                         prefix;
+  std::string                         command;
+  std::vector<std::string>            parameters;
+  std::string                         trailing;
+};*/
+
+//fist basic check
+static bool is_valid_input(std::string& msg){
+  size_t tok = 0;
+  size_t n_tok = 0;
+  std::string cmd;
+  bool has_prefix = 0;
+
+  if (msg.find_first_of("\a\0") != msg.npos)
+    return false;
+  if (msg[0] == ':'){
+    has_prefix = 1;
+    tok = msg.find_first_of(32);
+  }
+  n_tok = msg.find_first_of(32, tok);
+  return true;
+}
+
+//const char *val_cmd[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC",
+// "PRIVMSG", "MODE", NULL};
 
 std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
 {
