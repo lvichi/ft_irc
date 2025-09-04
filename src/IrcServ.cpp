@@ -63,11 +63,12 @@ void IrcServ::runServer()
 
       }
 
+      if ( it->revents & POLLOUT )
+        sendMessages( *it );
+
       outgoingMessages.find( it->fd ) != outgoingMessages.end() ?
          it->events = ( POLLOUT | POLLIN ) : it->events = POLLIN;
 
-      if ( it->revents & POLLOUT )
-        sendMessages( *it );
     }
   }
   std::cout << "\rServer shutting down." << std::endl;
@@ -210,7 +211,7 @@ void IrcServ::sendMessages( pollfd& clientFD )
   buffer.erase( 0, bytesSent );
 
   if ( buffer.empty() )
-    outgoingMessages.erase( clientFD.fd );
+    outgoingMessages.erase(clientFD.fd);
 
   return;
 }
