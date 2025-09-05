@@ -15,6 +15,7 @@ struct CommandStruct
   std::string                         command;
   std::vector<std::string>            parameters;
   std::string                         trailing;
+  unsigned int                        errorCode;
 };
 
 

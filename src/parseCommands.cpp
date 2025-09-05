@@ -35,6 +35,7 @@
   std::string                         command;
   std::vector<std::string>            parameters;
   std::string                         trailing;
+  unsigned int                        err;
 };*/
 
 //fist basic check
@@ -73,6 +74,7 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
       break;
 
     std::string commandLine( it, endOfCommand );
+    if (is_valid_input(commandLine)){
 
     cmd.clientFD = clientFD;
     cmd.command = "PRIVMSG";
@@ -81,6 +83,7 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
     cmd.trailing = commandLine;
 
     commands.push_back( cmd );
+   }
 
     cmd.parameters.clear();
 

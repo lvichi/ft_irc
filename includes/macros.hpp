@@ -39,6 +39,55 @@
 # define NO_SUCH_CMD "Error: this command does not exist\n"
 # define WRONG_PREFIX "Error: usage of prefix is wrong\n Prefix is \"nick[!user]@host\"\n"
 
+typedef enum e_error {
+  ERR_NOSUCHNICK        = 401, // target nick does not exist
+  ERR_NOSUCHCHANNEL     = 403, // no such channel
+  ERR_CANNOTSENDTOCHAN  = 404, // cannot send to channel (e.g., +n, +m, banned)
+  ERR_TOOMANYCHANNELS   = 405, // too many channels joined
+
+  ERR_NOORIGIN          = 409, // no origin specified (e.g., bad PING/PONG)
+
+  ERR_NORECIPIENT       = 411, // no recipient given
+  ERR_NOTEXTTOSEND      = 412, // no text to send
+  ERR_NOTOPLEVEL        = 413, // no top-level domain specified
+  ERR_WILDTOPLEVEL      = 414, // wildcard in top-level domain
+  ERR_BADMASK           = 415, // bad server/host mask
+
+  ERR_UNKNOWNCOMMAND    = 421, // unknown/unsupported command
+  ERR_NOMOTD            = 422, // MOTD is missing
+
+  ERR_NONICKNAMEGIVEN   = 431, // no nickname provided
+  ERR_ERRONEUSNICKNAME  = 432, // invalid nickname
+  ERR_NICKNAMEINUSE     = 433, // nickname already in use
+
+  ERR_USERNOTINCHANNEL  = 441, // target user not in channel
+  ERR_NOTONCHANNEL      = 442, // you are not on that channel
+  ERR_USERONCHANNEL     = 443, // user already on that channel
+
+  ERR_NOTREGISTERED     = 451, // command before registration
+
+  ERR_NEEDMOREPARAMS    = 461, // not enough parameters
+  ERR_ALREADYREGISTERED = 462, // already registered (aka ERR_ALREADYREGISTRED)
+  ERR_PASSWDMISMATCH    = 464, // incorrect or missing PASS
+  ERR_YOUREBANNEDCREEP  = 465, // you are banned from this server
+
+  ERR_CHANNELISFULL     = 471, // channel is full (+l)
+  ERR_UNKNOWNMODE       = 472, // unknown mode flag
+  ERR_INVITEONLYCHAN    = 473, // invite-only channel (+i)
+  ERR_BANNEDFROMCHAN    = 474, // banned from channel (+b)
+  ERR_BADCHANNELKEY     = 475, // bad channel key (+k)
+  ERR_BADCHANMASK       = 476, // bad channel mask
+  ERR_NOCHANMODES       = 477, // channel does not support modes
+  ERR_BANLISTFULL       = 478, // ban list is full
+
+  ERR_NOPRIVILEGES      = 481, // need IRC operator privileges
+  ERR_CHANOPRIVSNEEDED  = 482, // need channel operator privileges
+
+  ERR_NOOPERHOST        = 491, // OPER not allowed from this host
+
+  ERR_UMODEUNKNOWNFLAG  = 501, // unknown user mode flag
+  ERR_USERSDONTMATCH    = 502  // cannot change modes for other users
+} t_error;
 
 //typedef bool (*cmds[8])(std::list<CommandStruct> cmd);
 
