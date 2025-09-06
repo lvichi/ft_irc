@@ -1,5 +1,6 @@
 #include "../includes/parseCommands.hpp"
 #include "../includes/macros.hpp"
+#include <sstream>
 
 //NOTES on IRC message params sanitizer:
 //prefix is optional, servernam or nick[!user]@host;
@@ -29,30 +30,52 @@
 //NICK
 
 /*struct CommandStruct
-{
+  {
   unsigned int                        clientFD;
   std::string                         prefix;
   std::string                         command;
   std::vector<std::string>            parameters;
   std::string                         trailing;
   unsigned int                        err;
-};*/
+  };*/
 
 //fist basic check
 static bool is_valid_input(std::string& msg){
-  size_t tok = 0;
-  size_t n_tok = 0;
-  std::string cmd;
-  bool has_prefix = 0;
 
-  if (msg.find_first_of("\a\0") != msg.npos)
-    return false;
-  if (msg[0] == ':'){
-    has_prefix = 1;
-    tok = msg.find_first_of(32);
-  }
-  n_tok = msg.find_first_of(32, tok);
-  return true;
+	if (msg.find_first_of("\a\0") != msg.npos)
+		return false;
+	return true;
+}
+
+static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
+	std::istringstream fullCmd(cmdLine);
+	std::string tok;
+	bool hasPrefix;
+	bool hasTrailing;
+	bool firstPass = true;
+
+	fullCmd >> tok;
+	if (tok[0] == ':'){
+		cmd.prefix = tok;
+		hasPrefix = 1;
+	}
+	else
+		cmd.command = tok;
+	while (fullCmd >> tok){
+		if (firstPass && !hasPrefix){
+			cmd.command = tok;
+			firstPass = false;
+		}
+		if (tok[0] == ':'){
+			hasTrailing = true;
+			break;
+		}
+		cmd.parameters.push_back(tok);
+	}
+	if (hasTrailing){
+		cmd.trailing = std::string(cmdLine, cmdLine.find_first_of(':', 1) + 1, cmdLine.length() - 2);
+	}
+	return cmd;
 }
 
 //const char *val_cmd[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC",
@@ -60,35 +83,35 @@ static bool is_valid_input(std::string& msg){
 
 std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
 {
-  std::list<CommandStruct>  commands;
-  CommandStruct             cmd;
-  std::string               eoc = CRLF;
+	std::list<CommandStruct>  commands;
+	CommandStruct             cmd;
+	std::string               eoc = CRLF;
 
-  while ( true ) {
-    std::string::iterator it = message.begin();
+	while ( true ) {
+		std::string::iterator it = message.begin();
 
-    std::string::iterator endOfCommand;
-    endOfCommand = std::search( it, message.end(), eoc.begin(), eoc.end() );
+		std::string::iterator endOfCommand;
+		endOfCommand = std::search( it, message.end(), eoc.begin(), eoc.end() );
 
-    if ( endOfCommand == message.end() )
-      break;
+		if ( endOfCommand == message.end() )
+			break;
 
-    std::string commandLine( it, endOfCommand );
-    if (is_valid_input(commandLine)){
+		std::string commandLine( it, endOfCommand );
+		if (is_valid_input(commandLine)){
+			cmd = extractCommand(cmd, commandLine);
 
-    cmd.clientFD = clientFD;
-    cmd.command = "PRIVMSG";
-    cmd.prefix = "";
-    cmd.parameters.push_back( "#all" );
-    cmd.trailing = commandLine;
+			/*cmd.clientFD = clientFD;
+			cmd.command = "PRIVMSG";
+			cmd.prefix = "";
+			cmd.parameters.push_back( "#all" );
+			cmd.trailing = commandLine;
+*/
+		}
+		commands.push_back( cmd );
+		cmd.parameters.clear();
 
-    commands.push_back( cmd );
-   }
+		message.erase( message.begin(), endOfCommand + 2 );
+	}
 
-    cmd.parameters.clear();
-
-    message.erase( message.begin(), endOfCommand + 2 );
-  }
-
-  return commands;
+	return commands;
 }
