@@ -1,6 +1,7 @@
 #include "../includes/parseCommands.hpp"
 #include "../includes/macros.hpp"
 #include <sstream>
+#include <iostream>
 
 //NOTES on IRC message params sanitizer:
 //prefix is optional, servernam or nick[!user]@host;
@@ -50,21 +51,22 @@ static bool is_valid_input(std::string& msg){
 static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
 	std::istringstream fullCmd(cmdLine);
 	std::string tok;
-	bool hasPrefix;
-	bool hasTrailing;
+	bool hasPrefix = false;
+	bool hasTrailing = false;
 	bool firstPass = true;
 
 	fullCmd >> tok;
 	if (tok[0] == ':'){
-		cmd.prefix = tok;
+		cmd.prefix = std::string(tok, 1, tok.length());
 		hasPrefix = 1;
 	}
 	else
 		cmd.command = tok;
 	while (fullCmd >> tok){
-		if (firstPass && !hasPrefix){
+		if (firstPass && hasPrefix){
 			cmd.command = tok;
 			firstPass = false;
+			continue;
 		}
 		if (tok[0] == ':'){
 			hasTrailing = true;
@@ -98,7 +100,7 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
 
 		std::string commandLine( it, endOfCommand );
 		if (is_valid_input(commandLine)){
-			cmd = extractCommand(cmd, commandLine);
+			extractCommand(cmd, commandLine);
 
 			/*cmd.clientFD = clientFD;
 			cmd.command = "PRIVMSG";
@@ -106,6 +108,7 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
 			cmd.parameters.push_back( "#all" );
 			cmd.trailing = commandLine;
 */
+			cmd.clientFD = clientFD;
 		}
 		commands.push_back( cmd );
 		cmd.parameters.clear();
