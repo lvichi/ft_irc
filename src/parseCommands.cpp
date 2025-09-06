@@ -91,17 +91,13 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
 
 	while ( true ) {
 		std::string::iterator it = message.begin();
-
 		std::string::iterator endOfCommand;
 		endOfCommand = std::search( it, message.end(), eoc.begin(), eoc.end() );
-
 		if ( endOfCommand == message.end() )
 			break;
-
 		std::string commandLine( it, endOfCommand );
 		if (is_valid_input(commandLine)){
 			extractCommand(cmd, commandLine);
-
 			/*cmd.clientFD = clientFD;
 			cmd.command = "PRIVMSG";
 			cmd.prefix = "";
@@ -112,9 +108,7 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
 		}
 		commands.push_back( cmd );
 		cmd.parameters.clear();
-
 		message.erase( message.begin(), endOfCommand + 2 );
 	}
-
 	return commands;
 }

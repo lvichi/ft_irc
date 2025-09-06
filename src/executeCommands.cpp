@@ -1,5 +1,7 @@
 #include "executeCommands.hpp"
 
+//insert cmd distribution in this part, easy to test out.. 
+
 
 void executeCommands( std::list<CommandStruct>& commands, std::map<unsigned int, std::string>& outgoingMessages )
 {
