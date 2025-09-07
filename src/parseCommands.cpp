@@ -82,6 +82,12 @@ static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
 
 //const char *val_cmd[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC",
 // "PRIVMSG", "MODE", NULL};
+			/*cmd.clientFD = clientFD;
+			cmd.command = "PRIVMSG";
+			cmd.prefix = "";
+			cmd.parameters.push_back( "#all" );
+			cmd.trailing = commandLine;
+*/
 
 std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
 {
@@ -98,12 +104,6 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
 		std::string commandLine( it, endOfCommand );
 		if (is_valid_input(commandLine)){
 			extractCommand(cmd, commandLine);
-			/*cmd.clientFD = clientFD;
-			cmd.command = "PRIVMSG";
-			cmd.prefix = "";
-			cmd.parameters.push_back( "#all" );
-			cmd.trailing = commandLine;
-*/
 			cmd.clientFD = clientFD;
 		}
 		commands.push_back( cmd );

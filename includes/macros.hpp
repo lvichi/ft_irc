@@ -98,7 +98,8 @@ typedef enum e_cmd{
 	INVITE,
 	TOPIC,
 	PRIVMSG,
-	MODE
+	MODE,
+	UNKNOWN = -1
 } t_cmd;
 
 typedef enum e_mode{
