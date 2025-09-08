@@ -8,6 +8,7 @@ static void normalizeInput(std::string &cmd){
 }
 
 //note: only check pass being implemented currently, execs are all placeholders
+//note: list of clients, server pass, nicklist, channel list, mode list
 static int findAndExec(CommandStruct &command, std::map<unsigned int, std::string> &msg){
   const char *cmds[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE", NULL};
   const checks cf = {checkPass, checkNick, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode, NULL};
@@ -40,44 +41,6 @@ void executeCommands( std::list<CommandStruct>& commands, std::map<unsigned int,
       outgoingMessages[ it->clientFD ] += ss.str();
       continue ;
     }
-    /*     case PASS:
-           std::cout << "\e[1;31m >> Is PASS << \e[0m" << std::endl;
-           if (checkPass(*it, outgoingMessages))
-           printCommands( commands );
-           else
-           return;
-           break;
-           case NICK:
-           std::cout << "\e[1;31m >> Is NICK << \e[0m" << std::endl;
-    //checkNick(*it);
-    printCommands( commands );
-    break;
-    case KICK:
-    std::cout << "\e[1;31m >> Is KICK << \e[0m" << std::endl;
-    //checkKick(*it);
-    printCommands( commands );
-    break;
-    case INVITE:
-    std::cout << "\e[1;31m >> Is INVITE << \e[0m" << std::endl;
-    //checkInvite(*it);
-    printCommands( commands );
-    break;
-    case TOPIC:
-    std::cout << "\e[1;31m >> Is TOPIC << \e[0m" << std::endl;
-    //checkTopic(*it);
-    printCommands( commands );
-    break;
-    case PRIVMSG:
-    std::cout << "\e[1;31m >> Is PRIVMSG << \e[0m" << std::endl;
-    //checkPrivmsg(*it);
-    printCommands( commands );
-    break;
-    case MODE:
-    std::cout << "\e[1;31m >> Is MODE << \e[0m" << std::endl;
-    //checkMode(*it);
-    printCommands( commands );
-    break;
-    }*/
     ss << "Responding message to client FD: " << it->clientFD
       << " Message: " << it->trailing
       << "\r\n";

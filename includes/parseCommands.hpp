@@ -41,6 +41,7 @@ void execInvite(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg)
 void execTopic(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
 void execPrivmsg(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
 void execMode(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+
 /*
    Command structure for parsing IRC messages
    Example: ":nick!user@host PRIVMSG #channel :Hello, world!\r\n"

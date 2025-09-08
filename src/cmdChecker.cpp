@@ -10,10 +10,6 @@ bool checkPass(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoing
     outgoingMessages[cmd.clientFD].clear();
     return false;
   }
-/*  else if (server.pass != cmd.parameters.front()){
-    cmd.errorCode = ERR_PASSWDMISMATCH;
-    outgoingMessages[cmd.clientFD].clear();
-  }*/
   else if (cmd.parameters.size() != 1){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     outgoingMessages[cmd.clientFD].clear();
