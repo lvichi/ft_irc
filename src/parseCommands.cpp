@@ -29,6 +29,7 @@
 //+k = keypassword; +l = user limit to channel;
 //PASS to be decided
 //NICK
+//prefix is only for server side messages, never for user messages.
 
 /*struct CommandStruct
   {
@@ -43,7 +44,8 @@
 //fist basic check
 static bool is_valid_input(std::string& msg){
 
-	if (msg.find_first_of("\a\0") != msg.npos)
+	if (msg.find_first_of("\a\0") != msg.npos)// ||
+	//		msg[0] == ':') //prefix is server side only, should not be supplied by client
 		return false;
 	return true;
 }

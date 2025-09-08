@@ -4,6 +4,7 @@
 #include <list>         // std::list
 #include <vector>       // std::vector
 #include <algorithm>    // std::search
+#include <map>          // map container
 
 #define COMMAND_DELIMITER "\r\n"
 
@@ -16,13 +17,30 @@ struct CommandStruct
   std::vector<std::string>            parameters;
   std::string                         trailing;
   unsigned int                        errorCode;
-  int                                 type;
+//  int                                 type;
 };
 
+typedef bool (*checks[8])(CommandStruct &cmd, std::map<unsigned int, std::string> &out);
+
+typedef void (*execs[8])(CommandStruct &cmd, std::map<unsigned int, std::string> &out);
 
 std::list<CommandStruct>  parseCommands( std::string& message, unsigned int clientFD );
 
+bool checkPass(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+bool checkNick(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+bool checkKick(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+bool checkInvite(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+bool checkTopic(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+bool checkPrivmsg(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+bool checkMode(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
 
+void execPass(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+void execNick(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+void execKick(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+void execInvite(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+void execTopic(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+void execPrivmsg(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+void execMode(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
 /*
    Command structure for parsing IRC messages
    Example: ":nick!user@host PRIVMSG #channel :Hello, world!\r\n"

@@ -2,74 +2,89 @@
 #include "../includes/macros.hpp"
 #include <stdexcept>
 
-//insert cmd distribution in this part, easy to test out.. 
-//
 static void normalizeInput(std::string &cmd){
   for (int i = 0; cmd[i]; i++)
     cmd[i] = std::toupper(cmd[i]);
 }
 
-static void findCommand(CommandStruct &command){
+//note: only check pass being implemented currently, execs are all placeholders
+static int findAndExec(CommandStruct &command, std::map<unsigned int, std::string> &msg){
   const char *cmds[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE", NULL};
+  const checks cf = {checkPass, checkNick, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode, NULL};
+  const execs ef = {execPass, execNick, execKick, execInvite, execTopic, execPrivmsg, execMode, NULL};
+
   normalizeInput(command.command);
   for (int i = 0; cmds[i] != NULL; i++){
     if (command.command == cmds[i]){
-      command.type = i;
-      return;
+      if (cf[i](command, msg))
+        try{
+          ef[i](command, msg);
+          return 0;
+        }catch(std::exception &e){
+          std::cout << e.what() << std::endl;
+          return -2;
+        }
     }
   }
-  command.type = UNKNOWN;
+  return UNKNOWN;
 }
 
 void executeCommands( std::list<CommandStruct>& commands, std::map<unsigned int, std::string>& outgoingMessages )
 {
-
   for ( std::list<CommandStruct>::iterator it = commands.begin(); it != commands.end(); ++it ) {
     std::stringstream   ss;
-    findCommand(*it);
-    switch (it->type){
-      case UNKNOWN:
-        it->errorCode = ERR_UNKNOWNCOMMAND;
-        std::cout << "\e[1;31m >> Is UNKNOWN << \e[0m" << std::endl;
-        ss << "Command sent is Unknown by this server" << "\r\n";
-        outgoingMessages[ it->clientFD ] += ss.str();
-        continue ;
-      case PASS:
-        std::cout << "\e[1;31m >> Is PASS << \e[0m" << std::endl;
-        printCommands( commands );
-        break;
-      case NICK:
-        std::cout << "\e[1;31m >> Is NICK << \e[0m" << std::endl;
-        printCommands( commands );
-        break;
-      case KICK:
-        std::cout << "\e[1;31m >> Is KICK << \e[0m" << std::endl;
-        printCommands( commands );
-        break;
-      case INVITE:
-        std::cout << "\e[1;31m >> Is INVITE << \e[0m" << std::endl;
-        printCommands( commands );
-        break;
-      case TOPIC:
-        std::cout << "\e[1;31m >> Is TOPIC << \e[0m" << std::endl;
-        printCommands( commands );
-        break;
-      case PRIVMSG:
-        std::cout << "\e[1;31m >> Is PRIVMSG << \e[0m" << std::endl;
-        printCommands( commands );
-        break;
-      case MODE:
-        std::cout << "\e[1;31m >> Is MODE << \e[0m" << std::endl;
-        printCommands( commands );
-        break;
+    if (findAndExec(*it, outgoingMessages) == UNKNOWN){
+      it->errorCode = ERR_UNKNOWNCOMMAND;
+      std::cout << "\e[1;31m >> Is UNKNOWN << \e[0m" << std::endl;
+      ss << "Command sent is unknown by this server" << CRLF;
+      outgoingMessages[ it->clientFD ] += ss.str();
+      continue ;
     }
+    /*     case PASS:
+           std::cout << "\e[1;31m >> Is PASS << \e[0m" << std::endl;
+           if (checkPass(*it, outgoingMessages))
+           printCommands( commands );
+           else
+           return;
+           break;
+           case NICK:
+           std::cout << "\e[1;31m >> Is NICK << \e[0m" << std::endl;
+    //checkNick(*it);
+    printCommands( commands );
+    break;
+    case KICK:
+    std::cout << "\e[1;31m >> Is KICK << \e[0m" << std::endl;
+    //checkKick(*it);
+    printCommands( commands );
+    break;
+    case INVITE:
+    std::cout << "\e[1;31m >> Is INVITE << \e[0m" << std::endl;
+    //checkInvite(*it);
+    printCommands( commands );
+    break;
+    case TOPIC:
+    std::cout << "\e[1;31m >> Is TOPIC << \e[0m" << std::endl;
+    //checkTopic(*it);
+    printCommands( commands );
+    break;
+    case PRIVMSG:
+    std::cout << "\e[1;31m >> Is PRIVMSG << \e[0m" << std::endl;
+    //checkPrivmsg(*it);
+    printCommands( commands );
+    break;
+    case MODE:
+    std::cout << "\e[1;31m >> Is MODE << \e[0m" << std::endl;
+    //checkMode(*it);
+    printCommands( commands );
+    break;
+    }*/
     ss << "Responding message to client FD: " << it->clientFD
       << " Message: " << it->trailing
       << "\r\n";
     outgoingMessages[ it->clientFD ] += ss.str();
-  }
+}
 
-  commands.clear();
+commands.clear();
 }
 
 void printCommands( std::list<CommandStruct>& commands )
