@@ -3,11 +3,11 @@
 #include "../includes/executeCommands.hpp"
 #include "../includes/IrcServ.hpp"
 
-bool checkPass(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoingMessages){
+bool checkPass(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty() || cmd.parameters.size() != 1){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
-    outgoingMessages[cmd.clientFD].clear();
+    serv.outgoingMessage(cmd.clientFD, "");
     return false;
   }
   return true;
@@ -19,8 +19,8 @@ bool checkPass(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoing
   special  = "[" | "]" | "\" | "`" | "^" | "{" | "}"
   */
 
-bool checkNick(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoingMessages){
-  (void)outgoingMessages;
+bool checkNick(CommandStruct &cmd, IrcServ &serv){
+  (void)serv;
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NONICKNAMEGIVEN;
@@ -43,32 +43,32 @@ bool checkNick(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoing
   return true;
 }   
 
-bool checkKick(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoingMessages){
+bool checkKick(CommandStruct &cmd,  IrcServ&serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  (void)outgoingMessages;
+  (void)serv;
   return true;
 }
 
-bool checkInvite(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoingMessages){
+bool checkInvite(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  (void)outgoingMessages;
+  (void)serv;
   return true;
 }
 
-bool checkTopic(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoingMessages){
+bool checkTopic(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  (void)outgoingMessages;
+  (void)serv;
   return true;
 }
 
-bool checkPrivmsg(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoingMessages){
+bool checkPrivmsg(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  (void)outgoingMessages;
+  (void)serv;
   return true;
 }
 
-bool checkMode(CommandStruct &cmd, std::map<unsigned int, std::string> &outgoingMessages){
+bool checkMode(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  (void)outgoingMessages;
+  (void)serv;
   return true;
 }

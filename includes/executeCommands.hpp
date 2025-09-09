@@ -6,8 +6,9 @@
 #include <map>                // std::map
 #include "parseCommands.hpp"  // CommandStruct
 
+class IrcServ;
 
-void executeCommands( std::list<CommandStruct>& commands, std::map<unsigned int, std::string>& outgoingMessages );
+void executeCommands( std::list<CommandStruct>& commands, IrcServ& server );
 void printCommands( std::list<CommandStruct>& commands );
 
 

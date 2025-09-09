@@ -17,6 +17,7 @@
 #include <string>       // std::string
 #include <vector>       // std::vector
 #include <map>          // std::map
+#include <cstdlib>      // std::strtod
 #include <csignal>      // std::signal, SIGINT, SIGTERM
 #include <cerrno>       // errno, EAGAIN, EWOULDBLOCK
 #include <fcntl.h>      // fcntl, F_SETFL, O_NONBLOCK
@@ -28,6 +29,8 @@
 #include "executeCommands.hpp"
 
 #define IRC_BUFFER_SIZE 512
+
+class IrcServ;
 
 class IrcServ
 {
@@ -54,6 +57,8 @@ class IrcServ
     ~IrcServ();
 
     void            runServer();
+    void            outgoingMessage( int clientFD, const std::string& message );
+    bool            isPasswordValid( const std::string& pass ) const;
 };
 
 typedef struct s_serverInfo{

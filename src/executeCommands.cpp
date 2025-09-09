@@ -9,7 +9,7 @@ static void normalizeInput(std::string &cmd){
 
 //note: only check pass being implemented currently, execs are all placeholders
 //note: list of clients, server pass, nicklist, channel list, mode list
-static int findAndExec(CommandStruct &command, std::map<unsigned int, std::string> &msg){
+static int findAndExec(CommandStruct &command, IrcServ &serv){
   const char *cmds[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE", NULL};
   const checks cf = {checkPass, checkNick, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode, NULL};
   const execs ef = {execPass, execNick, execKick, execInvite, execTopic, execPrivmsg, execMode, NULL};
@@ -17,9 +17,9 @@ static int findAndExec(CommandStruct &command, std::map<unsigned int, std::strin
   normalizeInput(command.command);
   for (int i = 0; cmds[i] != NULL; i++){
     if (command.command == cmds[i]){
-      if (cf[i](command, msg))
+      if (cf[i](command, serv))
         try{
-          ef[i](command, msg);
+          ef[i](command, serv);
           return 0;
         }catch(std::exception &e){
           std::cout << e.what() << std::endl;
@@ -30,24 +30,23 @@ static int findAndExec(CommandStruct &command, std::map<unsigned int, std::strin
   return UNKNOWN;
 }
 
-void executeCommands( std::list<CommandStruct>& commands, std::map<unsigned int, std::string>& outgoingMessages )
+void executeCommands( std::list<CommandStruct>& commands, IrcServ& server )
 {
   for ( std::list<CommandStruct>::iterator it = commands.begin(); it != commands.end(); ++it ) {
     std::stringstream   ss;
-    if (findAndExec(*it, outgoingMessages) == UNKNOWN){
+    if (findAndExec(*it, server) == UNKNOWN){
       it->errorCode = ERR_UNKNOWNCOMMAND;
       std::cout << "\e[1;31m >> Is UNKNOWN << \e[0m" << std::endl;
       ss << "Command sent is unknown by this server" << CRLF;
-      outgoingMessages[ it->clientFD ] += ss.str();
+      server.outgoingMessage(it->clientFD, "Command sent is unknown by this server\r\n");
       continue ;
     }
     ss << "Responding message to client FD: " << it->clientFD
       << " Message: " << it->trailing
       << "\r\n";
-    outgoingMessages[ it->clientFD ] += ss.str();
-}
-
-commands.clear();
+    server.outgoingMessage( it->clientFD, ss.str() );
+  }
+  commands.clear();
 }
 
 void printCommands( std::list<CommandStruct>& commands )

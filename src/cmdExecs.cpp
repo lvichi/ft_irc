@@ -15,59 +15,59 @@ static void printCmd(CommandStruct &cmd){
     std::cout << "  Trailing: " << cmd.trailing << std::endl;
 }
 
-void execPass(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
-void execNick(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
-void execKick(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
-void execInvite(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
-void execTopic(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
-void execPrivmsg(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
-void execMode(CommandStruct &cmd, std::map<unsigned int, std::string>& outMsg);
+void execPass(CommandStruct &cmd, IrcServ &serv);
+void execNick(CommandStruct &cmd, IrcServ &serv);
+void execKick(CommandStruct &cmd, IrcServ &serv);
+void execInvite(CommandStruct &cmd, IrcServ &serv);
+void execTopic(CommandStruct &cmd, IrcServ &serv);
+void execPrivmsg(CommandStruct &cmd, IrcServ &serv);
+void execMode(CommandStruct &cmd, IrcServ &serv);
 
-void  execPass(CommandStruct &cmd, std::map<unsigned int, std::string> &outMsg)
+void  execPass(CommandStruct &cmd, IrcServ &serv)
 {
-  (void)outMsg;
+  (void)serv;
   std::cout << "executed: " RED << cmd.command << RST <<std::endl;
   printCmd(cmd);
 }
 
-void  execNick(CommandStruct &cmd, std::map<unsigned int, std::string> &outMsg)
+void  execNick(CommandStruct &cmd, IrcServ &serv)
 {
-  (void)outMsg;
+  (void)serv;
   std::cout << "executed: " RED << cmd.command << RST <<std::endl;
   printCmd(cmd);
 }
 
-void  execKick(CommandStruct &cmd, std::map<unsigned int, std::string> &outMsg)
+void  execKick(CommandStruct &cmd, IrcServ &serv)
 {
-  (void)outMsg;
+  (void)serv;
   std::cout << "executed: " RED << cmd.command << RST <<std::endl;
   printCmd(cmd);
 }
 
-void  execInvite(CommandStruct &cmd, std::map<unsigned int, std::string> &outMsg)
+void  execInvite(CommandStruct &cmd, IrcServ &serv)
 {
-  (void)outMsg;
+  (void)serv;
   std::cout << "executed: " RED << cmd.command << RST <<std::endl;
   printCmd(cmd);
 }
 
-void  execTopic(CommandStruct &cmd, std::map<unsigned int, std::string> &outMsg)
+void  execTopic(CommandStruct &cmd, IrcServ &serv)
 {
-  (void)outMsg;
+  (void)serv;
   std::cout << "executed: " RED << cmd.command << RST <<std::endl;
   printCmd(cmd);
 }
 
-void  execPrivmsg(CommandStruct &cmd, std::map<unsigned int, std::string> &outMsg)
+void  execPrivmsg(CommandStruct &cmd, IrcServ &serv)
 {
-  (void)outMsg;
+  (void)serv;
   std::cout << "executed: " RED << cmd.command << RST <<std::endl;
   printCmd(cmd);
 }
 
-void  execMode(CommandStruct &cmd, std::map<unsigned int, std::string> &outMsg)
+void  execMode(CommandStruct &cmd, IrcServ &serv)
 {
-  (void)outMsg;
+  (void)serv;
   std::cout << "executed: " RED << cmd.command << RST <<std::endl;
   printCmd(cmd);
 }

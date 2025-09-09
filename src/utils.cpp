@@ -11,6 +11,6 @@ bool isSpecial(unsigned char c){
 }
 
 t_serverInfo *server(void){
-  static t_serverInfo serv = {0};
+  static t_serverInfo serv;
   return &serv;
 }

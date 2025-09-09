@@ -3,19 +3,6 @@
 #include <sstream>
 #include <iostream>
 
-//NOTES on IRC message params sanitizer:
-//prefix is optional, servernam or nick[!user]@host;
-//commands are ALWAYS upper case, but may cause issues with client and
-//may need to normalize to all capital letters
-//command can also be 3 digit numbers.
-//up to 15 parameters, last one is trailing with : may contain spaces after trailing sufix
-//tags need to re-read subject
-//CRLF must be present meaning \r\n;
-//NULL is always forbidden and CRLF must always come at the end;
-//0x01 can be supported for ctcp payload for PRIVMSG/NOTICE
-//prefix ALWAYS starts with : no spaces between servername or nick[!user]@host
-//ex. = :nick!user@host PRIVMSG #chat :hello world\r\n
-
 //notes on commands:
 //KICK: <#channel> <user> [<comment>]; channel exists, sender is in the channel
 //sender has operator privileges, +o;
@@ -42,9 +29,9 @@
   };*/
 
 //fist basic check
+//prefix is server side only, should not be supplied by client
 static bool is_valid_input(std::string& msg){
-	if (msg.find_first_of("\a\0") != msg.npos ||
-			msg[0] == ':') //prefix is server side only, should not be supplied by client
+	if (msg.find_first_of("\a\0") != msg.npos || msg[0] == ':')
 		return false;
 	return true;
 }
@@ -66,12 +53,13 @@ static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
 	if (cmd.parameters.size() > TAG_LIMIT)
 		cmd.errorCode = ERR_INPUTTOOLONG;
 	if (hasTrailing){
-		cmd.trailing = std::string(cmdLine, cmdLine.find_first_of(':', 1) + 1, cmdLine.length() - 2);
+		cmd.trailing = std::string(cmdLine, cmdLine.find_first_of(':', 1)
+			+ 1, cmdLine.length() - 2);
 	}
 	return cmd;
 }
 
-std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
+void  parseCommands( IrcServ& server, std::string& message, unsigned int clientFD )
 {
 	std::list<CommandStruct>  commands;
 	CommandStruct             cmd;
@@ -92,5 +80,5 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
 		cmd.parameters.clear();
 		message.erase( message.begin(), endOfCommand + 2 );
 	}
-	return commands;
+	executeCommands( commands, server );
 }

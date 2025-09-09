@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 
-#include "IrcServ.hpp"
+#include "../includes/IrcServ.hpp"
 
 
 volatile sig_atomic_t g_endServer = 0;
@@ -57,10 +57,7 @@ void IrcServ::runServer()
         if ( message.empty() )
           continue;
 
-        // TO BE CORRECTLY IMPLEMENTED
-        std::list<CommandStruct> commands = parseCommands( message, it->fd );
-        executeCommands( commands, outgoingMessages );
-
+        parseCommands( *this, message, it->fd );
       }
 
       if ( it->revents & POLLOUT )
@@ -214,4 +211,15 @@ void IrcServ::sendMessages( pollfd& clientFD )
     outgoingMessages.erase(clientFD.fd);
 
   return;
+}
+
+void IrcServ::outgoingMessage( int clientFD, const std::string& message )
+{
+  outgoingMessages[clientFD] += message;
+}
+
+
+bool IrcServ::isPasswordValid( const std::string& pass ) const
+{
+  return pass == password;
 }
