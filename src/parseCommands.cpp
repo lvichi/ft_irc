@@ -43,9 +43,8 @@
 
 //fist basic check
 static bool is_valid_input(std::string& msg){
-
-	if (msg.find_first_of("\a\0") != msg.npos)// ||
-	//		msg[0] == ':') //prefix is server side only, should not be supplied by client
+	if (msg.find_first_of("\a\0") != msg.npos ||
+			msg[0] == ':') //prefix is server side only, should not be supplied by client
 		return false;
 	return true;
 }
@@ -53,43 +52,24 @@ static bool is_valid_input(std::string& msg){
 static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
 	std::istringstream fullCmd(cmdLine);
 	std::string tok;
-	bool hasPrefix = false;
 	bool hasTrailing = false;
-	bool firstPass = true;
 
 	fullCmd >> tok;
-	if (tok[0] == ':'){
-		cmd.prefix = std::string(tok, 1, tok.length());
-		hasPrefix = 1;
-	}
-	else
-		cmd.command = tok;
+	cmd.command = tok;
 	while (fullCmd >> tok){
-		if (firstPass && hasPrefix){
-			cmd.command = tok;
-			firstPass = false;
-			continue;
-		}
 		if (tok[0] == ':'){
 			hasTrailing = true;
 			break;
 		}
 		cmd.parameters.push_back(tok);
 	}
+	if (cmd.parameters.size() > TAG_LIMIT)
+		cmd.errorCode = ERR_INPUTTOOLONG;
 	if (hasTrailing){
 		cmd.trailing = std::string(cmdLine, cmdLine.find_first_of(':', 1) + 1, cmdLine.length() - 2);
 	}
 	return cmd;
 }
-
-//const char *val_cmd[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC",
-// "PRIVMSG", "MODE", NULL};
-			/*cmd.clientFD = clientFD;
-			cmd.command = "PRIVMSG";
-			cmd.prefix = "";
-			cmd.parameters.push_back( "#all" );
-			cmd.trailing = commandLine;
-*/
 
 std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
 {

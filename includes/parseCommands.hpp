@@ -17,7 +17,6 @@ struct CommandStruct
   std::vector<std::string>            parameters;
   std::string                         trailing;
   unsigned int                        errorCode;
-//  int                                 type;
 };
 
 typedef bool (*checks[8])(CommandStruct &cmd, std::map<unsigned int, std::string> &out);

@@ -16,6 +16,10 @@
 #define BELL "\a"
 #define TAG_LIMIT 14
 #define CRLF "\r\n"
+#define SPECIAL "[]\\`^{}"
+#define HYPHEN "-"
+#define DIGITS "0123456789"
+#define ALPHAS "abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ"
 
 //colour prints
 
@@ -52,6 +56,7 @@ typedef enum e_error {
   ERR_NOTOPLEVEL        = 413, // no top-level domain specified
   ERR_WILDTOPLEVEL      = 414, // wildcard in top-level domain
   ERR_BADMASK           = 415, // bad server/host mask
+  ERR_INPUTTOOLONG	= 417, // more than 14 params or 512 bytes
 
   ERR_UNKNOWNCOMMAND    = 421, // unknown/unsupported command
   ERR_NOMOTD            = 422, // MOTD is missing
@@ -109,3 +114,5 @@ typedef enum e_mode{
 	O_MODE,
 	L_MODE
 } t_mode;
+
+bool isSpecial(unsigned char c);
