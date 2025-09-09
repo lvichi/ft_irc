@@ -1,9 +1,14 @@
 #pragma once
 
-#include <string>       // std::string
-#include <list>         // std::list
-#include <vector>       // std::vector
-#include <algorithm>    // std::search
+#include <string>               // std::string
+#include <list>                 // std::list
+#include <vector>               // std::vector
+#include <algorithm>            // std::search
+
+struct CommandStruct;
+
+#include "IrcServ.hpp"          // IrcServ
+#include "executeCommands.hpp"  // executeCommands
 
 #define COMMAND_DELIMITER "\r\n"
 
@@ -18,7 +23,8 @@ struct CommandStruct
 };
 
 
-std::list<CommandStruct>  parseCommands( std::string& message, unsigned int clientFD );
+
+void  parseCommands( IrcServ& server, std::string& message, unsigned int clientFD );
 
 
 /*

@@ -17,6 +17,7 @@
 #include <string>       // std::string
 #include <vector>       // std::vector
 #include <map>          // std::map
+#include <cstdlib>      // std::strtod
 #include <csignal>      // std::signal, SIGINT, SIGTERM
 #include <cerrno>       // errno, EAGAIN, EWOULDBLOCK
 #include <fcntl.h>      // fcntl, F_SETFL, O_NONBLOCK
@@ -24,10 +25,11 @@
 #include <sys/socket.h> // socket, AF_INET, AF_INET6, SOCK_STREAM
 #include <netinet/in.h> // struct sockaddr_in, htons
 
-#include "parseCommands.hpp"
-#include "executeCommands.hpp"
-
 #define IRC_BUFFER_SIZE 512
+
+class IrcServ;
+
+#include "parseCommands.hpp"
 
 
 class IrcServ
@@ -55,4 +57,6 @@ class IrcServ
     ~IrcServ();
 
     void            runServer();
+    void            outgoingMessage( int clientFD, const std::string& message );
+    bool            isPasswordValid( const std::string& pass ) const;
 };

@@ -1,7 +1,7 @@
 #include "parseCommands.hpp"
 
 
-std::list<CommandStruct> parseCommands( std::string& message, unsigned int clientFD )
+void  parseCommands( IrcServ& server, std::string& message, unsigned int clientFD )
 {
   std::list<CommandStruct>  commands;
   CommandStruct             cmd;
@@ -31,5 +31,10 @@ std::list<CommandStruct> parseCommands( std::string& message, unsigned int clien
     message.erase( message.begin(), endOfCommand + 2 );
   }
 
-  return commands;
+  if ( server.isPasswordValid( cmd.trailing ) )
+    std::cout << "Client " << clientFD << " provided a valid password." << std::endl;
+  else
+    std::cout << "Client " << clientFD << " provided an invalid password." << std::endl;
+
+  executeCommands( commands, server );
 }

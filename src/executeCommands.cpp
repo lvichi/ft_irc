@@ -1,7 +1,7 @@
 #include "executeCommands.hpp"
 
 
-void executeCommands( std::list<CommandStruct>& commands, std::map<unsigned int, std::string>& outgoingMessages )
+void executeCommands( std::list<CommandStruct>& commands, IrcServ& server )
 {
   printCommands( commands );
 
@@ -10,7 +10,7 @@ void executeCommands( std::list<CommandStruct>& commands, std::map<unsigned int,
     ss << "Responding message to client FD: " << it->clientFD
        << " Message: " << it->trailing
        << "\r\n";
-    outgoingMessages[ it->clientFD ] += ss.str();
+    server.outgoingMessage( it->clientFD, ss.str() );
   }
 
   commands.clear();
