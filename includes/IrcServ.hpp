@@ -29,7 +29,6 @@
 
 #define IRC_BUFFER_SIZE 512
 
-
 class IrcServ
 {
   private:
@@ -56,3 +55,12 @@ class IrcServ
 
     void            runServer();
 };
+
+typedef struct s_serverInfo{
+  const std::string       pass;
+  std::list<std::string>  channels;
+  std::list<std::string>  nicks;
+  std::list<std::string>  users;
+} t_serverInfo;
+
+t_serverInfo  *server(void);
