@@ -20,6 +20,8 @@
 #define HYPHEN "-"
 #define DIGITS "0123456789"
 #define ALPHAS "abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ"
+#define CHANNEL_MAX 50
+#define CHANNEL_PREFIX "#&!+"
 
 //colour prints
 

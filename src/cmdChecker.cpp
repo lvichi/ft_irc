@@ -15,11 +15,17 @@ bool checkPass(CommandStruct &cmd, IrcServ &serv){
 
 bool checkUser(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  if(cmd.parameters.empty() || cmd.parameters.size() != 1){
+
+  if(cmd.parameters.empty() || cmd.parameters.size() != 3 
+      || cmd.trailing.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     serv.outgoingMessage(cmd.clientFD, "");
     return false;
   }
+
+  if (cmd.parameters.front().find_first_of(CRLF"@ \0")
+      != cmd.parameters.front().npos)
+    return false;
   return true;
 }
 
@@ -53,9 +59,21 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
   return true;
 }   
 
+//KICK <channel>*(,channel) <user>*(,user) [<comment>]
+
 bool checkKick(CommandStruct &cmd,  IrcServ&serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  (void)serv;
+  std::string chan(CHANNEL_PREFIX);
+  if(cmd.parameters.empty() || cmd.parameters.size() != 2){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    serv.outgoingMessage(cmd.clientFD, "");
+    return false;
+  }
+  if (chan.find_first_of(cmd.parameters.front()[0]) == std::string::npos){
+    cmd.errorCode = ERR_BADCHANMASK;
+    serv.outgoingMessage(cmd.clientFD, "");
+    return false;
+  }
   return true;
 }
 
