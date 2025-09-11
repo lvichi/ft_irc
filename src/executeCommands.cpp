@@ -10,9 +10,9 @@ static void normalizeInput(std::string &cmd){
 //note: only check pass being implemented currently, execs are all placeholders
 //note: list of clients, server pass, nicklist, channel list, mode list
 static int findAndExec(CommandStruct &command, IrcServ &serv){
-  const char *cmds[8] = {"PASS", "NICK", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE", NULL};
-  const checks cf = {checkPass, checkNick, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode, NULL};
-  const execs ef = {execPass, execNick, execKick, execInvite, execTopic, execPrivmsg, execMode, NULL};
+  const char *cmds[9] = {"PASS", "USER", "NICK", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE", NULL};
+  const checks cf = {checkPass, checkUser, checkNick, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode, NULL};
+  const execs ef = {execPass, execUser, execNick, execKick, execInvite, execTopic, execPrivmsg, execMode, NULL};
 
   normalizeInput(command.command);
   for (int i = 0; cmds[i] != NULL; i++){

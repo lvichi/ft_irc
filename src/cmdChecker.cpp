@@ -13,6 +13,16 @@ bool checkPass(CommandStruct &cmd, IrcServ &serv){
   return true;
 }
 
+bool checkUser(CommandStruct &cmd, IrcServ &serv){
+  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
+  if(cmd.parameters.empty() || cmd.parameters.size() != 1){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    serv.outgoingMessage(cmd.clientFD, "");
+    return false;
+  }
+  return true;
+}
+
 /*nickname = ( letter / special ) * ( letter / digit / special / "-" )
   letter   = A-Z / a-z
   digit    = 0-9

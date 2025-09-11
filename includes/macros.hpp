@@ -98,6 +98,7 @@ typedef enum e_error {
 
 typedef enum e_cmd{
 	PASS,
+	USER,
 	NICK,
 	KICK,
 	INVITE,

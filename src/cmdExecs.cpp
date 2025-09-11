@@ -30,6 +30,13 @@ void  execPass(CommandStruct &cmd, IrcServ &serv)
   printCmd(cmd);
 }
 
+void  execUser(CommandStruct &cmd, IrcServ &serv)
+{
+  (void)serv;
+  std::cout << "executed: " RED << cmd.command << RST <<std::endl;
+  printCmd(cmd);
+}
+
 void  execNick(CommandStruct &cmd, IrcServ &serv)
 {
   (void)serv;
