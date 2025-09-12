@@ -11,6 +11,7 @@ private:
     std::string _realname;
     std::string _hostname;
     bool _registered;
+    bool _passwordAuthenticated;
 
 public:
     Client();
@@ -26,12 +27,14 @@ public:
     const std::string &getRealname() const;
     const std::string &getHostname() const;
     bool isRegistered() const;
+    bool isPasswordAuthenticated() const;
 
     void setUsername(const std::string &username);
     void setNickname(const std::string &nickname);
     void setRealname(const std::string &realname);
     void setHostname(const std::string &hostname);
     void authenticate();
+    void setPasswordAuthenticated(bool auth);
 
     void send(const std::string &message, IrcServ &server) const;
 };
