@@ -12,6 +12,8 @@
 
 
 #include "../includes/IrcServ.hpp"
+#include "../includes/Client.hpp"
+#include "../includes/Channel.hpp"
 
 
 volatile sig_atomic_t g_endServer = 0;
@@ -23,6 +25,14 @@ IrcServ::IrcServ( unsigned int port, const std::string& password )
 
 IrcServ::~IrcServ()
 {
+  // Delete all clients
+  for ( std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it )
+    delete it->second;
+  
+  // Delete all channels
+  for ( std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it )
+    delete it->second;
+  
   for ( std::vector<pollfd>::iterator it = poolFDs.begin(); it != poolFDs.end(); ++it )
     if ( it->fd >= 0 )
       close( it->fd );
@@ -125,6 +135,8 @@ void IrcServ::connectClient()
   clientPollFD.revents = 0;
 
   poolFDs.push_back( clientPollFD );
+  
+  addClient( clientFD );
 
   std::cout << "Client connected. fd: " << clientPollFD.fd << std::endl;
 }
@@ -133,6 +145,8 @@ void IrcServ::connectClient()
 void IrcServ::closeClient( pollfd& clientFD )
 {
   std::cout << "Closed client connection. fd: " << clientFD.fd << std::endl;
+
+  removeClient( clientFD.fd );
 
   close( clientFD.fd );
   fdBuffers.erase( clientFD.fd );
@@ -198,11 +212,11 @@ void IrcServ::sendMessages( pollfd& clientFD )
   bytesSent = send( clientFD.fd, buffer.c_str(), buffer.size(), 0 );
 
   if ( bytesSent <= 0 ) {
-    if ( errno != EAGAIN && errno != EWOULDBLOCK )
-      return
-
-    std::cerr << "Error sending message to client. fd: " << clientFD.fd << std::endl, void();
-    closeClient( clientFD );
+    if ( errno != EAGAIN && errno != EWOULDBLOCK ) {
+      std::cerr << "Error sending message to client. fd: " << clientFD.fd << std::endl;
+      closeClient( clientFD );
+    }
+    return;
   }
 
   buffer.erase( 0, bytesSent );
@@ -222,4 +236,65 @@ void IrcServ::outgoingMessage( int clientFD, const std::string& message )
 bool IrcServ::isPasswordValid( const std::string& pass ) const
 {
   return pass == password;
+}
+
+// Client management methods
+void IrcServ::addClient( int fd )
+{
+  clients[fd] = new Client(fd);
+}
+
+void IrcServ::removeClient( int fd )
+{
+  std::map<int, Client*>::iterator it = clients.find(fd);
+  if ( it != clients.end() ) {
+    delete it->second;
+    clients.erase(it);
+  }
+}
+
+Client* IrcServ::getClient( int fd )
+{
+  std::map<int, Client*>::iterator it = clients.find(fd);
+  return ( it != clients.end() ) ? it->second : NULL;
+}
+
+const std::map<int, Client*>& IrcServ::getClients() const
+{
+  return clients;
+}
+
+// Channel management methods
+Channel* IrcServ::getChannel( const std::string& name )
+{
+  std::map<std::string, Channel*>::iterator it = channels.find(name);
+  return ( it != channels.end() ) ? it->second : NULL;
+}
+
+Channel* IrcServ::createChannel( const std::string& name )
+{
+  if ( channelExists(name) )
+    return getChannel(name);
+  
+  channels[name] = new Channel(name);
+  return channels[name];
+}
+
+void IrcServ::removeChannel( const std::string& name )
+{
+  std::map<std::string, Channel*>::iterator it = channels.find(name);
+  if ( it != channels.end() ) {
+    delete it->second;
+    channels.erase(it);
+  }
+}
+
+bool IrcServ::channelExists( const std::string& name ) const
+{
+  return channels.find(name) != channels.end();
+}
+
+const std::map<std::string, Channel*>& IrcServ::getChannels() const
+{
+  return channels;
 }

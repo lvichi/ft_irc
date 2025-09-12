@@ -24,12 +24,16 @@ struct CommandStruct
   unsigned int                        errorCode;
 };
 
-typedef bool (*checks[8])(CommandStruct &cmd, IrcServ &serv);
+typedef bool (*checks[11])(CommandStruct &cmd, IrcServ &serv);
 
-typedef void (*execs[8])(CommandStruct &cmd, IrcServ &serv);
+typedef void (*execs[11])(CommandStruct &cmd, IrcServ &serv);
 
 bool checkPass(CommandStruct &cmd, IrcServ &serv);
 bool checkNick(CommandStruct &cmd, IrcServ &serv);
+bool checkUser(CommandStruct &cmd, IrcServ &serv);
+bool checkJoin(CommandStruct &cmd, IrcServ &serv);
+bool checkPart(CommandStruct &cmd, IrcServ &serv);
+bool checkQuit(CommandStruct &cmd, IrcServ &serv);
 bool checkKick(CommandStruct &cmd, IrcServ &serv);
 bool checkInvite(CommandStruct &cmd, IrcServ &serv);
 bool checkTopic(CommandStruct &cmd, IrcServ &serv);
@@ -38,6 +42,10 @@ bool checkMode(CommandStruct &cmd, IrcServ &serv);
 
 void execPass(CommandStruct &cmd, IrcServ &  serv);
 void execNick(CommandStruct &cmd, IrcServ & serv);
+void execUser(CommandStruct &cmd, IrcServ & serv);
+void execJoin(CommandStruct &cmd, IrcServ & serv);
+void execPart(CommandStruct &cmd, IrcServ & serv);
+void execQuit(CommandStruct &cmd, IrcServ & serv);
 void execKick(CommandStruct &cmd, IrcServ &serv);
 void execInvite(CommandStruct &cmd, IrcServ & serv);
 void execTopic(CommandStruct &cmd, IrcServ &serv);
