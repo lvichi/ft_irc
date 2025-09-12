@@ -2,7 +2,7 @@
 
 echo "=== Testando Comandos IRC ==="
 
-# truque que aprendi com o chatgpt kkkkk
+# Use a block to send multiple IRC commands to the server via netcat (nc) using a here-document style.
 {
     echo "PASS test123"
     sleep 0.5
