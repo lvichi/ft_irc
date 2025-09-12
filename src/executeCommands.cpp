@@ -33,18 +33,11 @@ static int findAndExec(CommandStruct &command, IrcServ &serv){
 void executeCommands( std::list<CommandStruct>& commands, IrcServ& server )
 {
   for ( std::list<CommandStruct>::iterator it = commands.begin(); it != commands.end(); ++it ) {
-    std::stringstream   ss;
     if (findAndExec(*it, server) == UNKNOWN){
       it->errorCode = ERR_UNKNOWNCOMMAND;
       std::cout << "\e[1;31m >> Is UNKNOWN << \e[0m" << std::endl;
-      ss << "Command sent is unknown by this server" << CRLF;
-      server.outgoingMessage(it->clientFD, "Command sent is unknown by this server\r\n");
       continue ;
     }
-    ss << "Responding message to client FD: " << it->clientFD
-      << " Message: " << it->trailing
-      << "\r\n";
-    server.outgoingMessage( it->clientFD, ss.str() );
   }
   commands.clear();
 }

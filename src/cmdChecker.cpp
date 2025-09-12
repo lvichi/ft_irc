@@ -4,10 +4,10 @@
 #include "../includes/IrcServ.hpp"
 
 bool checkPass(CommandStruct &cmd, IrcServ &serv){
+  (void)serv;
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty() || cmd.parameters.size() != 1){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
-    serv.outgoingMessage(cmd.clientFD, "");
     return false;
   }
   return true;
