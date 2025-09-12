@@ -200,7 +200,7 @@ void  execKick(CommandStruct &cmd, IrcServ &serv)
     return;
   }
 
-  // Encontra o cliente maldito
+  // Find the target client
   Client* targetClient = NULL;
   const std::map<int, Client*>& clients = serv.getClients();
   for (std::map<int, Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it) {
