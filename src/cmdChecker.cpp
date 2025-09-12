@@ -4,10 +4,10 @@
 #include "../includes/IrcServ.hpp"
 
 bool checkPass(CommandStruct &cmd, IrcServ &serv){
+  (void)serv;
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty() || cmd.parameters.size() != 1){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
-    serv.outgoingMessage(cmd.clientFD, "");
     return false;
   }
   return true;
@@ -60,6 +60,33 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
 }   
 
 //KICK <channel>*(,channel) <user>*(,user) [<comment>]
+
+bool checkJoin(CommandStruct &cmd, IrcServ &serv){
+  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
+  (void)serv;
+  if(cmd.parameters.empty()){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
+  return true;
+}
+
+bool checkPart(CommandStruct &cmd, IrcServ &serv){
+  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
+  (void)serv;
+  if(cmd.parameters.empty()){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
+  return true;
+}
+
+bool checkQuit(CommandStruct &cmd, IrcServ &serv){
+  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
+  (void)serv;
+  (void)cmd;
+  return true;
+}
 
 bool checkKick(CommandStruct &cmd,  IrcServ&serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;

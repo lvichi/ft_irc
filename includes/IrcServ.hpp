@@ -30,6 +30,8 @@
 
 #define IRC_BUFFER_SIZE 512
 
+class Client;
+class Channel;
 class IrcServ;
 
 class IrcServ
@@ -44,6 +46,8 @@ class IrcServ
     std::vector<pollfd>                   poolFDs;
     std::map<unsigned int, std::string>   fdBuffers;
     std::map<unsigned int, std::string>   outgoingMessages;
+    std::map<int, Client*>                clients;
+    std::map<std::string, Channel*>       channels;
 
     static void     handleSigint( int );
     void            createServerSocket();
@@ -59,6 +63,19 @@ class IrcServ
     void            runServer();
     void            outgoingMessage( int clientFD, const std::string& message );
     bool            isPasswordValid( const std::string& pass ) const;
+    
+    // Client management
+    void            addClient( int fd );
+    void            removeClient( int fd );
+    Client*         getClient( int fd );
+    const std::map<int, Client*>& getClients() const;
+    
+    // Channel management
+    Channel*        getChannel( const std::string& name );
+    Channel*        createChannel( const std::string& name );
+    void            removeChannel( const std::string& name );
+    bool            channelExists( const std::string& name ) const;
+    const std::map<std::string, Channel*>& getChannels() const;
 };
 
 typedef struct s_serverInfo{

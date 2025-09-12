@@ -1,5 +1,6 @@
 #include "../includes/executeCommands.hpp"
 #include "../includes/macros.hpp"
+#include "../includes/replies.hpp"
 #include <stdexcept>
 
 static void normalizeInput(std::string &cmd){
@@ -10,12 +11,12 @@ static void normalizeInput(std::string &cmd){
 //note: only check pass being implemented currently, execs are all placeholders
 //note: list of clients, server pass, nicklist, channel list, mode list
 static int findAndExec(CommandStruct &command, IrcServ &serv){
-  const char *cmds[9] = {"PASS", "USER", "NICK", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE", NULL};
-  const checks cf = {checkPass, checkUser, checkNick, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode, NULL};
-  const execs ef = {execPass, execUser, execNick, execKick, execInvite, execTopic, execPrivmsg, execMode, NULL};
+  const char *cmds[11] = {"PASS", "NICK", "USER", "JOIN", "PART", "QUIT", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE"};
+  const checks cf = {checkPass, checkNick, checkUser, checkJoin, checkPart, checkQuit, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode};
+  const execs ef = {execPass, execNick, execUser, execJoin, execPart, execQuit, execKick, execInvite, execTopic, execPrivmsg, execMode};
 
   normalizeInput(command.command);
-  for (int i = 0; cmds[i] != NULL; i++){
+  for (int i = 0; i < 11; i++){
     if (command.command == cmds[i]){
       if (cf[i](command, serv))
         try{
@@ -35,18 +36,14 @@ static int findAndExec(CommandStruct &command, IrcServ &serv){
 void executeCommands( std::list<CommandStruct>& commands, IrcServ& server )
 {
   for ( std::list<CommandStruct>::iterator it = commands.begin(); it != commands.end(); ++it ) {
-    std::stringstream   ss;
     if (findAndExec(*it, server) == UNKNOWN){
-      it->errorCode = ERR_UNKNOWNCOMMAND;
-      std::cout << "\e[1;31m >> Is UNKNOWN << \e[0m" << std::endl;
-      ss << "Command sent is unknown by this server" << CRLF;
-      server.outgoingMessage(it->clientFD, "Command sent is unknown by this server\r\n");
+      it->errorCode = UNKNOWN;
+      std::cout << "\e[1;31m >> Command UNKNOWN: " << it->command << " << \e[0m" << std::endl;
+      
+      std::string errorMsg = ":" + std::string(SERVER_NAME) + " " + ERR_UNKNOWNCOMMAND + " * " + it->command + " :Unknown command";
+      server.outgoingMessage(it->clientFD, errorMsg + "\r\n");
       continue ;
     }
-    ss << "Responding message to client FD: " << it->clientFD
-      << " Message: " << it->trailing
-      << "\r\n";
-    server.outgoingMessage( it->clientFD, ss.str() );
   }
   commands.clear();
 }
