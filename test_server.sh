@@ -18,7 +18,7 @@ echo ""
 echo "=== Teste de Conexão Básica ==="
 echo "Testando conexão básica com netcat..."
 
-# ainda bem que existe o chatgpt, aprendi mt bash com ele...
+# Simulate a basic IRC client session using netcat
 {
     echo "PASS senha"
     echo "NICK testuser"
