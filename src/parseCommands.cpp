@@ -50,7 +50,7 @@ static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
 		}
 		cmd.parameters.push_back(tok);
 	}
-	if (cmd.parameters.size() > TAG_LIMIT)
+	if (cmd.parameters.size() > PARAM_MAX)
 		cmd.errorCode = ERR_INPUTTOOLONG;
 	if (hasTrailing){
 		cmd.trailing = std::string(cmdLine, cmdLine.find_first_of(':', 1)

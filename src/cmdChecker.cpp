@@ -49,7 +49,7 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_ERRONEUSNICKNAME;
     return false;
   }
-  else if (cmd.parameters.front().size() > 9 ||
+  else if (cmd.parameters.front().size() > NICK_MAX ||
       cmd.parameters.front().find_first_not_of(ALPHAS DIGITS HYPHEN SPECIAL)
       != cmd.parameters.front().npos){
     std::cout << "problem is input sanitizer" << std::endl;
@@ -69,7 +69,8 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
     serv.outgoingMessage(cmd.clientFD, "");
     return false;
   }
-  if (chan.find_first_of(cmd.parameters.front()[0]) == std::string::npos){
+  else if (chan.find_first_of(cmd.parameters.front()[0]) == std::string::npos
+      || cmd.parameters.front().find_first_of(',') != std::string::npos){
     cmd.errorCode = ERR_BADCHANMASK;
     serv.outgoingMessage(cmd.clientFD, "");
     return false;
@@ -79,7 +80,17 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
 
 bool checkInvite(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
-  (void)serv;
+  if(cmd.parameters.empty() || cmd.parameters.size() != 2){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    serv.outgoingMessage(cmd.clientFD, "");
+    return false;
+  }
+
+  else if (!cmd.trailing.empty()){
+    cmd.errorCode = ERR_INPUTTOOLONG;
+    serv.outgoingMessage(cmd.clientFD, "");
+    return false;
+  }
   return true;
 }
 

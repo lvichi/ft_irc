@@ -30,6 +30,8 @@ static int findAndExec(CommandStruct &command, IrcServ &serv){
   return UNKNOWN;
 }
 
+//:irc.example.net 001 <target-nick> :Welcome to IRC!
+
 void executeCommands( std::list<CommandStruct>& commands, IrcServ& server )
 {
   for ( std::list<CommandStruct>::iterator it = commands.begin(); it != commands.end(); ++it ) {
