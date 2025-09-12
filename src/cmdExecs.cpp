@@ -592,8 +592,28 @@ void  execQuit(CommandStruct &cmd, IrcServ &serv)
   
   std::string quitMessage = cmd.trailing.empty() ? "Client Quit" : cmd.trailing;
   
-  // Nota: Por agora só imprime a mensagem de quit no console
-  // A implementação completa removeria o cliente de todos os canais e notificaria os membros
+  // Remove client from all channels and notify members
+  const std::set<std::string>& channels = client->getChannels();
+  std::string quitReply = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " QUIT :" + quitMessage + "\r\n";
+  for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+    Channel* channel = serv.getChannel(*it);
+    if (channel) {
+      // Notify all other members in the channel
+      const std::set<int>& members = channel->getMembers();
+      for (std::set<int>::const_iterator mit = members.begin(); mit != members.end(); ++mit) {
+        if (*mit != cmd.clientFD) {
+          serv.outgoingMessage(*mit, quitReply);
+        }
+      }
+      // Remove client from channel
+      channel->removeMember(cmd.clientFD);
+      // If channel is empty, remove it from server
+      if (channel->isEmpty()) {
+        serv.removeChannel(*it);
+      }
+    }
+  }
+  // Optionally, log the quit event
   std::cout << "Client " << (client->getNickname().empty() ? "unknown" : client->getNickname()) << " quit: " << quitMessage << std::endl;
 }
 
