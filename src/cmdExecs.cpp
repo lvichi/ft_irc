@@ -308,7 +308,7 @@ void  execInvite(CommandStruct &cmd, IrcServ &serv)
   std::string inviteMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " INVITE " + targetNick + " " + channelName;
   serv.outgoingMessage(targetClient->getFd(), inviteMsg + "\r\n");
 
-  // Confirma para quem convidou (não está no RFC, segundo o GPT)
+  // Confirma para quem convidou (não está no RFC)
   std::cout << "User " << client->getNickname() << " invited " << targetNick << " to " << channelName << std::endl;
 }
 
