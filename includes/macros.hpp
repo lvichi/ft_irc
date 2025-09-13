@@ -57,8 +57,8 @@
 #define RPL_ENDOFNAMES          "366"
 
 // Server settings
-#define SERVER_NAME             "ft_irc"
-#define SERVER_VERSION          "1.0"
+#define SERVER_NAME             "ft_irc (lvichi, rapcampo, errgrab)"
+#define SERVER_VERSION          "0.42"
 
 typedef enum e_error {
   ERR_NOSUCHNICK        = 401, // target nick does not exist
@@ -73,7 +73,7 @@ typedef enum e_error {
   ERR_NOTOPLEVEL        = 413, // no top-level domain specified
   ERR_WILDTOPLEVEL      = 414, // wildcard in top-level domain
   ERR_BADMASK           = 415, // bad server/host mask
-  ERR_INPUTTOOLONG	= 417, // more than 14 params or 512 bytes
+  ERR_INPUTTOOLONG	    = 417, // more than 14 params or 512 bytes
 
   ERR_UNKNOWNCOMMAND    = 421, // unknown/unsupported command
   ERR_NOMOTD            = 422, // MOTD is missing

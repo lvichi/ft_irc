@@ -35,7 +35,7 @@ void Client::setNickname(const std::string &nickname) {_nickname = nickname;}
 void Client::setRealname(const std::string &realname) {_realname = realname;}
 void Client::setHostname(const std::string &hostname) {_hostname = hostname;}
 void Client::authenticate() {_registered = true;}
-void Client::setPasswordAuthenticated(bool auth) {_passwordAuthenticated = auth;}
+void Client::authenticatePassword() {_passwordAuthenticated = true;}
 
 // Methods
 void Client::send(const std::string &message, IrcServ &server) const {
@@ -95,9 +95,9 @@ void Client::sendError(IrcServ &server, t_error errorCode) const {
 
 void Client::sendWelcome(IrcServ &server) const {
     std::string welcome = ":" + std::string(SERVER_NAME) + " " + RPL_WELCOME + " " + _nickname + 
-                         " :Welcome to the Internet Relay Network " + _nickname;
+                          " :Welcome to the Internet Relay Network " + _nickname;
     std::string yourhost = ":" + std::string(SERVER_NAME) + " " + RPL_YOURHOST + " " + _nickname + 
-                          " :Your host is " + std::string(SERVER_NAME) + ", running version " + std::string(SERVER_VERSION);
+                           " :Your host is " + std::string(SERVER_NAME) + ", running version " + std::string(SERVER_VERSION);
     send(welcome, server);
     send(yourhost, server);
 }
