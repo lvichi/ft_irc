@@ -47,7 +47,8 @@ static std::string getErrorMessage(t_error error) {
     return ":Unknown error";
 }
 
-static void sendErrorToClient(CommandStruct &cmd, IrcServ &server, t_error errorCode, const std::string &target = "") {
+static void sendErrorToClient(CommandStruct &cmd, IrcServ &server, t_error errorCode,
+		const std::string &target = "") {
     std::string nick = "*"; // Default nickname for unregistered clients
     std::string errorMsg = ":" + std::string(SERVER_NAME) + " " + errorToString(errorCode) + " " + nick;
     
@@ -67,24 +68,22 @@ static void normalizeInput(std::string &cmd){
 //note: only check pass being implemented currently, execs are all placeholders
 //note: list of clients, server pass, nicklist, channel list, mode list
 static int findAndExec(CommandStruct &command, IrcServ &serv){
-  const char *cmds[11] = {"PASS", "NICK", "USER", "JOIN", "PART", "QUIT", "KICK", "INVITE", "TOPIC", "PRIVMSG", "MODE"};
-  const checks cf = {checkPass, checkNick, checkUser, checkJoin, checkPart, checkQuit, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode};
-  const execs ef = {execPass, execNick, execUser, execJoin, execPart, execQuit, execKick, execInvite, execTopic, execPrivmsg, execMode};
+  const char *cmds[11] = {"PASS", "NICK", "USER", "JOIN", "PART", "QUIT", "KICK",
+	  "INVITE", "TOPIC", "PRIVMSG", "MODE"};
+  const checks cf = {checkPass, checkNick, checkUser, checkJoin, checkPart,
+	  checkQuit, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode};
+  const execs ef = {execPass, execNick, execUser, execJoin, execPart, execQuit,
+	  execKick, execInvite, execTopic, execPrivmsg, execMode};
 
   normalizeInput(command.command);
   for (int i = 0; i < 11; i++){
     if (command.command == cmds[i]){
-      if (cf[i](command, serv)) {
-        try{
+      if (cf[i](command, serv) && command.errorCode != 0) {
           ef[i](command, serv);
           return 0;
-        }catch(std::exception &e){
-          std::cout << e.what() << std::endl;
-          return -2;
-        }
       } else {
         sendErrorToClient(command, serv, static_cast<t_error>(command.errorCode), command.command);
-        return -1;
+        return -2;
       }
     }
   }
