@@ -60,6 +60,7 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
 
 //KICK <channel>*(,channel) <user>*(,user) [<comment>]
 
+//join need to check for +i and +o;
 bool checkJoin(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
 
@@ -125,6 +126,7 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
   return true;
 }
 
+//need to implement +i check for it;
 bool checkInvite(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty() || cmd.parameters.size() != 2){
@@ -139,6 +141,7 @@ bool checkInvite(CommandStruct &cmd, IrcServ &serv){
   return true;
 }
 
+//need to implement +t to it;
 bool checkTopic(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
