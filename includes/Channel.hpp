@@ -5,6 +5,8 @@
 #include <map>
 
 class Client;
+class IrcServ;
+struct CommandStruct;
 
 class Channel {
 private:
@@ -73,4 +75,9 @@ public:
     void                        broadcast(const std::string& message, class IrcServ& server) const;
     void                        sendJoinMessages(Client* client, class IrcServ& server) const;
     void                        sendPartMessages(Client* client, const std::string& reason, class IrcServ& server) const;
+    void                        sendKickMessage(Client* sender, Client* target, const std::string& msg, IrcServ& serv);
+    void                        sendTopic(Client* client, IrcServ& serv);
+    void                        broadcastTopic(Client* client, IrcServ& serv);
+    void                        broadcastPrivmsg(Client* sender, const std::string& msg, IrcServ& serv);
+    void                        handleMode(Client* client, CommandStruct& cmd, IrcServ& serv);
 };

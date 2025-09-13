@@ -68,6 +68,7 @@ class IrcServ
     void            addClient( int fd );
     void            removeClient( int fd );
     Client*         getClient( int fd );
+    Client*         getClientByNick(const std::string& nickname);
     const std::map<int, Client*>& getClients() const;
     
     // Channel management
