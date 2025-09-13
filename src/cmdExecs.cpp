@@ -41,7 +41,7 @@ void  execNick(CommandStruct &cmd, IrcServ &serv)
   std::string newNick = cmd.parameters[0];
   
   if (isNicknameInUse(newNick, serv)) {
-    client->sendError(serv, ERR_NICKNAMEINUSE, newNick + " " + CMT_NICKNAMEINUSE);
+    client->sendError(serv, ERR_NICKNAMEINUSE);
     return;
   }
 
@@ -73,60 +73,126 @@ void  execUser(CommandStruct &cmd, IrcServ &serv)
   }
 }
 
-void  execKick(CommandStruct &cmd, IrcServ &serv)
+void execKick(CommandStruct &cmd, IrcServ &serv)
 {
-  Client* client = serv.getClient(cmd.clientFD);
-  if (!client) return;
-  
-  if (!client->isRegistered()) {
-    client->sendError(serv, ERR_NOTREGISTERED, ":You have not registered");
-    return;
-  }
-  
-  // Comando KICK básico - implementação simplificada
-  std::cout << "KICK command executed (simplified)" << std::endl;
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    if (!client->isRegistered()) {
+        client->sendError(serv, ERR_NOTREGISTERED);
+        return;
+    }
+    std::string channelName = cmd.parameters[0];
+    std::string targetNick = cmd.parameters[1];
+    Channel* channel = serv.getChannel(channelName);
+    if (!channel) {
+        client->sendError(serv, ERR_NOSUCHCHANNEL);
+        return;
+    }
+    if (!channel->isOperator(client)) {
+        client->sendError(serv, ERR_CHANOPRIVSNEEDED);
+        return;
+    }
+    Client* target = serv.getClientByNick(targetNick);
+    if (!target || !channel->isMember(target)) {
+        client->sendError(serv, ERR_USERNOTINCHANNEL);
+        return;
+    }
+    std::string kickMsg = cmd.trailing.empty() ? targetNick : cmd.trailing;
+    channel->sendKickMessage(client, target, kickMsg, serv);
+    channel->removeMember(target);
+    if (channel->isEmpty()) serv.removeChannel(channelName);
 }
 
-void  execInvite(CommandStruct &cmd, IrcServ &serv)
+void execInvite(CommandStruct &cmd, IrcServ &serv)
 {
-  Client* client = serv.getClient(cmd.clientFD);
-  if (!client) return;
-
-  if (!client->isRegistered()) {
-    client->sendError(serv, ERR_NOTREGISTERED, ":You have not registered");
-    return;
-  }
-  
-  // Comando INVITE básico - implementação simplificada
-  std::cout << "INVITE command executed (simplified)" << std::endl;
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    if (!client->isRegistered()) {
+        client->sendError(serv, ERR_NOTREGISTERED);
+        return;
+    }
+    std::string targetNick = cmd.parameters[1];
+    std::string channelName = cmd.parameters[0];
+    Channel* channel = serv.getChannel(channelName);
+    if (!channel) {
+        client->sendError(serv, ERR_NOSUCHCHANNEL);
+        return;
+    }
+    if (!channel->isOperator(client)) {
+        client->sendError(serv, ERR_CHANOPRIVSNEEDED);
+        return;
+    }
+    Client* target = serv.getClientByNick(targetNick);
+    if (!target) {
+        client->sendError(serv, ERR_NOSUCHNICK);
+        return;
+    }
+    if (channel->isMember(target)) {
+        client->sendError(serv, ERR_USERONCHANNEL);
+        return;
+    }
+    target->sendInvite(serv, channelName);
 }
 
-void  execTopic(CommandStruct &cmd, IrcServ &serv)
+void execTopic(CommandStruct &cmd, IrcServ &serv)
 {
-  Client* client = serv.getClient(cmd.clientFD);
-  if (!client) return;
-
-  if (!client->isRegistered()) {
-    client->sendError(serv, ERR_NOTREGISTERED, ":You have not registered");
-    return;
-  }
-  
-  // Comando TOPIC básico - implementação simplificada  
-  std::cout << "TOPIC command executed (simplified)" << std::endl;
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    if (!client->isRegistered()) {
+        client->sendError(serv, ERR_NOTREGISTERED);
+        return;
+    }
+    std::string channelName = cmd.parameters[0];
+    Channel* channel = serv.getChannel(channelName);
+    if (!channel) {
+        client->sendError(serv, ERR_NOSUCHCHANNEL);
+        return;
+    }
+    if (cmd.parameters.size() == 1) {
+        channel->sendTopic(client, serv);
+        return;
+    }
+    if (channel->isTopicProtected() && !channel->isOperator(client)) {
+        client->sendError(serv, ERR_CHANOPRIVSNEEDED);
+        return;
+    }
+    channel->setTopic(cmd.parameters[1]);
+    channel->broadcastTopic(client, serv);
 }
 
-void  execPrivmsg(CommandStruct &cmd, IrcServ &serv)
+void execPrivmsg(CommandStruct &cmd, IrcServ &serv)
 {
-  Client* client = serv.getClient(cmd.clientFD);
-  if (!client) return;
-
-  if (!client->isRegistered()) {
-    client->sendError(serv, ERR_NOTREGISTERED, ":You have not registered");
-    return;
-  }
-  
-  // Comando PRIVMSG básico - implementação simplificada
-  std::cout << "PRIVMSG command executed (simplified)" << std::endl;
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    if (!client->isRegistered()) {
+        client->sendError(serv, ERR_NOTREGISTERED);
+        return;
+    }
+    std::string target = cmd.parameters[0];
+    std::string message = cmd.trailing;
+    if (target.empty() || message.empty()) {
+        client->sendError(serv, ERR_NORECIPIENT);
+        return;
+    }
+    if (target[0] == '#') {
+        Channel* channel = serv.getChannel(target);
+        if (!channel) {
+            client->sendError(serv, ERR_NOSUCHCHANNEL);
+            return;
+        }
+        if (!channel->isMember(client)) {
+            client->sendError(serv, ERR_CANNOTSENDTOCHAN);
+            return;
+        }
+        channel->broadcastPrivmsg(client, message, serv);
+    } else {
+        Client* dest = serv.getClientByNick(target);
+        if (!dest) {
+            client->sendError(serv, ERR_NOSUCHNICK);
+            return;
+        }
+        dest->sendPrivmsg(client, message, serv);
+    }
 }
 
 void  execJoin(CommandStruct &cmd, IrcServ &serv)
@@ -135,7 +201,7 @@ void  execJoin(CommandStruct &cmd, IrcServ &serv)
   if (!client) return;
 
   if (!client->isRegistered()) {
-    client->sendError(serv, ERR_NOTREGISTERED, ":You have not registered");
+    client->sendError(serv, ERR_NOTREGISTERED);
     return;
   }
   
@@ -148,7 +214,7 @@ void  execJoin(CommandStruct &cmd, IrcServ &serv)
   }
 
   if (!channel->canJoin(client, key)) {
-    client->sendError(serv, ERR_CHANNELISFULL, channelName + " :Cannot join channel");
+    client->sendError(serv, ERR_CHANNELISFULL);
     return;
   }
 
@@ -162,7 +228,7 @@ void  execPart(CommandStruct &cmd, IrcServ &serv)
   if (!client) return;
   
   if (!client->isRegistered()) {
-    client->sendError(serv, ERR_NOTREGISTERED, ":You have not registered");
+    client->sendError(serv, ERR_NOTREGISTERED);
     return;
   }
   
@@ -171,12 +237,12 @@ void  execPart(CommandStruct &cmd, IrcServ &serv)
   
   Channel* channel = serv.getChannel(channelName);
   if (!channel) {
-    client->sendError(serv, ERR_NOSUCHCHANNEL, channelName + " :No such channel");
+    client->sendError(serv, ERR_NOSUCHCHANNEL);
     return;
   }
 
   if (!channel->isMember(client)) {
-    client->sendError(serv, ERR_NOTONCHANNEL, channelName + " :You're not on that channel");
+    client->sendError(serv, ERR_NOTONCHANNEL);
     return;
   }
 
@@ -188,48 +254,51 @@ void  execPart(CommandStruct &cmd, IrcServ &serv)
   }
 }
 
-void  execQuit(CommandStruct &cmd, IrcServ &serv)
+void execQuit(CommandStruct &cmd, IrcServ &serv)
 {
-  Client* client = serv.getClient(cmd.clientFD);
-  if (!client) return;
-  
-  std::string quitMessage = cmd.trailing.empty() ? "Client Quit" : cmd.trailing;
-  
-  // Remove client from all channels and notify members
-  // const std::set<std::string>& channels = client->getChannels();
-  // std::string quitReply = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " QUIT :" + quitMessage + "\r\n";
-  // for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
-  //   Channel* channel = serv.getChannel(*it);
-  //   if (channel) {
-  //     // Notify all other members in the channel
-  //     const std::set<int>& members = channel->getMembers();
-  //     for (std::set<int>::const_iterator mit = members.begin(); mit != members.end(); ++mit) {
-  //       if (*mit != cmd.clientFD) {
-  //         serv.outgoingMessage(*mit, quitReply);
-  //       }
-  //     }
-  //     // Remove client from channel
-  //     channel->removeMember(cmd.clientFD);
-  //     // If channel is empty, remove it from server
-  //     if (channel->isEmpty()) {
-  //       serv.removeChannel(*it);
-  //     }
-  //   }
-  // }
-  // Optionally, log the quit event
-  std::cout << "Client " << (client->getNickname().empty() ? "unknown" : client->getNickname()) << " quit: " << quitMessage << std::endl;
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    std::string quitMessage = cmd.trailing.empty() ? "Client Quit" : cmd.trailing;
+    const std::set<std::string>& channels = client->getChannels();
+    std::string quitReply = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " QUIT :" + quitMessage + "\r\n";
+    for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+        Channel* channel = serv.getChannel(*it);
+        if (channel) {
+            const std::set<Client*>& members = channel->getMembers();
+            for (std::set<Client*>::const_iterator mit = members.begin(); mit != members.end(); ++mit) {
+                if (*mit != client) {
+                    serv.outgoingMessage((*mit)->getFd(), quitReply);
+                }
+            }
+            channel->removeMember(client);
+            if (channel->isEmpty()) serv.removeChannel(*it);
+        }
+    }
+    serv.removeClient(cmd.clientFD);
+    std::cout << "Client " << (client->getNickname().empty() ? "unknown" : client->getNickname()) << " quit: " << quitMessage << std::endl;
 }
 
-void  execMode(CommandStruct &cmd, IrcServ &serv)
+void execMode(CommandStruct &cmd, IrcServ &serv)
 {
-  Client* client = serv.getClient(cmd.clientFD);
-  if (!client) return;
-  
-  if (!client->isRegistered()) {
-    client->sendError(serv, ERR_NOTREGISTERED, ":You have not registered");
-    return;
-  }
-  
-  // Comando MODE básico - implementação simplificada
-  std::cout << "MODE command executed (simplified)" << std::endl;
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    if (!client->isRegistered()) {
+        client->sendError(serv, ERR_NOTREGISTERED);
+        return;
+    }
+    std::string target = cmd.parameters[0];
+    if (target.empty()) {
+        client->sendError(serv, ERR_NEEDMOREPARAMS);
+        return;
+    }
+    if (target[0] == '#') {
+        Channel* channel = serv.getChannel(target);
+        if (!channel) {
+            client->sendError(serv, ERR_NOSUCHCHANNEL);
+            return;
+        }
+        channel->handleMode(client, cmd, serv);
+    } else {
+        client->handleUserMode(cmd, serv);
+    }
 }

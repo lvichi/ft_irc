@@ -259,6 +259,15 @@ Client* IrcServ::getClient( int fd )
   return ( it != clients.end() ) ? it->second : NULL;
 }
 
+Client* IrcServ::getClientByNick(const std::string& nickname) {
+    const std::map<int, Client*>& clients = getClients();
+    for (std::map<int, Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it) {
+        if (it->second->getNickname() == nickname)
+            return it->second;
+    }
+    return NULL;
+}
+
 const std::map<int, Client*>& IrcServ::getClients() const
 {
   return clients;

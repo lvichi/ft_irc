@@ -14,6 +14,7 @@ Client &Client::operator=(const Client &other) {
         _hostname = other._hostname;
         _registered = other._registered;
         _passwordAuthenticated = other._passwordAuthenticated;
+        _channels = other._channels;
     }
     return *this;
 }
@@ -104,4 +105,31 @@ void Client::sendWelcome(IrcServ &server) const {
 
 bool Client::canRegister() const {
     return _passwordAuthenticated && !_nickname.empty() && !_username.empty() && !_registered;
+}
+
+void Client::sendInvite(IrcServ& serv, const std::string& channelName) {
+    std::string msg = ":" + std::string(SERVER_NAME) + " 341 " + getNickname() + " " + channelName + "\r\n";
+    serv.outgoingMessage(getFd(), msg);
+}
+
+void Client::sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv) {
+    std::string privMsg = ":" + sender->getNickname() + "!" + sender->getUsername() + "@" + sender->getHostname() + " PRIVMSG " + getNickname() + " :" + msg + "\r\n";
+    serv.outgoingMessage(getFd(), privMsg);
+}
+
+std::set<std::string> Client::getChannels() const {
+    return _channels;
+}
+
+void Client::addChannel(const std::string& channelName) {
+    _channels.insert(channelName);
+}
+
+void Client::removeChannel(const std::string& channelName) {
+    _channels.erase(channelName);
+}
+
+void Client::handleUserMode(CommandStruct& cmd, IrcServ& serv) {
+    (void)cmd; // Suppress unused parameter warning
+    serv.outgoingMessage(getFd(), ":USERMODE command received\r\n");
 }
