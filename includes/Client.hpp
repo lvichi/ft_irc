@@ -35,7 +35,7 @@ public:
     void setRealname(const std::string &realname);
     void setHostname(const std::string &hostname);
     void authenticate();
-    void setPasswordAuthenticated(bool auth);
+    void authenticatePassword();
 
     void send(const std::string &message, IrcServ &server) const;
     

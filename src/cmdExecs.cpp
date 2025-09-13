@@ -27,7 +27,7 @@ void  execPass(CommandStruct &cmd, IrcServ &serv)
   }
 
   if (serv.isPasswordValid(cmd.parameters[0])) {
-    client->setPasswordAuthenticated(true);
+    client->authenticatePassword();
   } else {
     client->sendError(serv, ERR_PASSWDMISMATCH);
   }
