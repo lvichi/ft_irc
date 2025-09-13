@@ -7,7 +7,6 @@
 
 bool checkPass(CommandStruct &cmd, IrcServ &serv){
   (void)serv;
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty() || cmd.parameters.size() != 1){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
@@ -16,7 +15,6 @@ bool checkPass(CommandStruct &cmd, IrcServ &serv){
 }
 
 bool checkUser(CommandStruct &cmd, IrcServ &serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty() || cmd.parameters.size() != 3 
       || cmd.trailing.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
@@ -38,7 +36,6 @@ bool checkUser(CommandStruct &cmd, IrcServ &serv){
 
 bool checkNick(CommandStruct &cmd, IrcServ &serv){
   (void)serv;
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NONICKNAMEGIVEN;
     return false;
@@ -63,7 +60,6 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
 //join need to check for +i and +o;
 bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
   (void)serv;
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
 
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
@@ -80,7 +76,6 @@ bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
 }
 
 bool checkPart(CommandStruct &cmd, IrcServ &serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
@@ -90,14 +85,12 @@ bool checkPart(CommandStruct &cmd, IrcServ &serv){
 }
 
 bool checkQuit(CommandStruct &cmd, IrcServ &serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
   (void)cmd;
   return true;
 }
 
 bool checkKick(CommandStruct &cmd,  IrcServ&serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   Client* clt = serv.getClient(cmd.clientFD);
   if (!clt)
 	  return false;
@@ -131,7 +124,6 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
 
 //need to implement +i check for it;
 bool checkInvite(CommandStruct &cmd, IrcServ &serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   if(cmd.parameters.empty() || cmd.parameters.size() != 2){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
@@ -146,7 +138,6 @@ bool checkInvite(CommandStruct &cmd, IrcServ &serv){
 
 //need to implement +t to it;
 bool checkTopic(CommandStruct &cmd, IrcServ &serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
@@ -156,7 +147,6 @@ bool checkTopic(CommandStruct &cmd, IrcServ &serv){
 }
 
 bool checkPrivmsg(CommandStruct &cmd, IrcServ &serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
   if(cmd.parameters.empty() || cmd.trailing.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
@@ -166,7 +156,6 @@ bool checkPrivmsg(CommandStruct &cmd, IrcServ &serv){
 }
 
 bool checkMode(CommandStruct &cmd, IrcServ &serv){
-  std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
