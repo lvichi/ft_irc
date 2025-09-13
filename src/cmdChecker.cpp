@@ -61,7 +61,8 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
 //KICK <channel>*(,channel) <user>*(,user) [<comment>]
 
 //join need to check for +i and +o;
-bool checkJoin(CommandStruct &cmd, IrcServ &serv){
+bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
+  (void)serv;
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
 
   if(cmd.parameters.empty()){
@@ -119,7 +120,9 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
 	  cmd.errorCode = ERR_CHANOPRIVSNEEDED;
 	  return false;
   }
-  std::string usr = *std::next(cmd.parameters.begin());
+  std::vector<std::string>::iterator it = cmd.parameters.begin();
+  ++it;
+  std::string usr = *it;
   (void)usr;
   //std::list<std::string> membs = chn->getMembersList();
   //todo check for user being in previously checked channel;
