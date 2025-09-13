@@ -1,6 +1,8 @@
 #include "../includes/Channel.hpp"
 #include "../includes/Client.hpp"
 #include "../includes/IrcServ.hpp"
+#include "../includes/macros.hpp"
+#include "../includes/IrcServ.hpp"
 #include <algorithm>
 
 Channel::Channel() : _inviteOnly(false), _topicProtected(false), _hasKey(false), _hasUserLimit(false), _userLimit(0) {}
@@ -74,15 +76,12 @@ bool Channel::isInvited(Client* client) const {
 }
 
 bool Channel::canJoin(Client* client, const std::string& key) const {
-    // Check user limit
     if (_hasUserLimit && _members.size() >= _userLimit)
         return false;
     
-    // Check invite only mode
     if (_inviteOnly && !isInvited(client))
         return false;
     
-    // Check key protection
     if (_hasKey && key != _key)
         return false;
     
@@ -91,7 +90,6 @@ bool Channel::canJoin(Client* client, const std::string& key) const {
 
 void Channel::addMember(Client* client) {
     _members.insert(client);
-    // If channel is empty, make first member an operator
     if (_members.size() == 1) {
         _operators.insert(client);
     }
@@ -135,7 +133,6 @@ std::string Channel::getMembersList() const {
     for (std::set<Client*>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
         if (!list.empty()) list += " ";
         
-        // Add operator prefix
         if (isOperator(*it)) list += "@";
         
         list += (*it)->getNickname();
@@ -143,14 +140,36 @@ std::string Channel::getMembersList() const {
     return list;
 }
 
-void Channel::broadcast(const std::string& message, Client* sender) const {
-    (void)message; // Will be implemented when IrcServ integration is complete
-    (void)sender;
-    // For now we'll implement this in the command execution
-    // for (std::set<Client*>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
-    //     if (*it != sender) { // Don't send to sender
-    //         // This will need IrcServ instance to send
-    //         // For now we'll implement this in the command execution
-    //     }
-    // }
+void Channel::broadcast(const std::string& message, IrcServ& server) const {
+    for (std::set<Client*>::const_iterator it = _members.begin(); it != _members.end(); ++it) {
+        (*it)->send(message, server);
+    }
+}
+
+void Channel::sendJoinMessages(Client* client, IrcServ& server) const {
+    std::string joinMsg = ":" + client->getFullPrefix() + " JOIN " + _name;
+    broadcast(joinMsg, server);
+    
+    if (!_topic.empty()) {
+        std::string topicReply = ":" + std::string(SERVER_NAME) + " " + RPL_TOPIC + " " + 
+                               client->getNickname() + " " + _name + " :" + _topic;
+        client->send(topicReply, server);
+    } else {
+        std::string noTopicReply = ":" + std::string(SERVER_NAME) + " " + RPL_NOTOPIC + " " + 
+                                 client->getNickname() + " " + _name + " :No topic is set";
+        client->send(noTopicReply, server);
+    }
+    
+    std::string namesList = getMembersList();
+    std::string namesReply = ":" + std::string(SERVER_NAME) + " " + RPL_NAMREPLY + " " + 
+                           client->getNickname() + " = " + _name + " :" + namesList;
+    std::string endNamesReply = ":" + std::string(SERVER_NAME) + " " + RPL_ENDOFNAMES + " " + 
+                              client->getNickname() + " " + _name + " :End of /NAMES list";
+    client->send(namesReply, server);
+    client->send(endNamesReply, server);
+}
+
+void Channel::sendPartMessages(Client* client, const std::string& reason, IrcServ& server) const {
+    std::string partMsg = ":" + client->getFullPrefix() + " PART " + _name + " :" + reason;
+    broadcast(partMsg, server);
 }

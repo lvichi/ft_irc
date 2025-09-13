@@ -1,5 +1,7 @@
 #include "../includes/Client.hpp"
+#include "../includes/macros.hpp"
 #include <cstring>
+#include <sstream>
 
 Client::Client() : _fd(-1), _registered(false), _passwordAuthenticated(false) {}
 Client::Client(const Client &other) {*this = other;}
@@ -40,4 +42,66 @@ void Client::send(const std::string &message, IrcServ &server) const {
     if (_fd != -1) {
         server.outgoingMessage(_fd, message + "\r\n");
     }
+}
+
+std::string Client::getFullPrefix() const {
+    return _nickname + "!" + _username + "@" + _hostname;
+}
+
+void Client::sendError(IrcServ &server, t_error errorCode, const std::string& message) const {
+    std::ostringstream oss;
+    oss << errorCode;
+    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + 
+                       (_nickname.empty() ? "*" : _nickname) + " " + message;
+    send(reply, server);
+}
+
+void Client::sendError(IrcServ &server, t_error errorCode) const {
+    std::ostringstream oss;
+    oss << errorCode;
+    
+    const t_error errorCodes[] = {
+        ERR_NOSUCHNICK, ERR_NOSUCHCHANNEL, ERR_CANNOTSENDTOCHAN, ERR_TOOMANYCHANNELS,
+        ERR_UNKNOWNCOMMAND, ERR_NONICKNAMEGIVEN, ERR_ERRONEUSNICKNAME, ERR_NICKNAMEINUSE,
+        ERR_USERNOTINCHANNEL, ERR_NOTONCHANNEL, ERR_USERONCHANNEL, ERR_NOTREGISTERED,
+        ERR_NEEDMOREPARAMS, ERR_ALREADYREGISTERED, ERR_PASSWDMISMATCH, ERR_CHANNELISFULL,
+        ERR_UNKNOWNMODE, ERR_INVITEONLYCHAN, ERR_BANNEDFROMCHAN, ERR_BADCHANNELKEY,
+        ERR_CHANOPRIVSNEEDED
+    };
+    
+    const char* errorMessages[] = {
+        CMT_NOSUCHNICK, CMT_NOSUCHCHANNEL, CMT_CANNOTSENDTOCHAN, CMT_TOOMANYCHANNELS,
+        CMT_UNKNOWNCOMMAND, CMT_NONICKNAMEGIVEN, CMT_ERRONEUSNICKNAME, CMT_NICKNAMEINUSE,
+        CMT_USERNOTINCHANNEL, CMT_NOTONCHANNEL, CMT_USERONCHANNEL, CMT_NOTREGISTERED,
+        CMT_NEEDMOREPARAMS, CMT_ALREADYREGISTERED, CMT_PASSWDMISMATCH, CMT_CHANNELISFULL,
+        CMT_UNKNOWNMODE, CMT_INVITEONLYCHAN, CMT_BANNEDFROMCHAN, CMT_BADCHANNELKEY,
+        CMT_CHANOPRIVSNEEDED
+    };
+    
+    const int numErrors = sizeof(errorCodes) / sizeof(errorCodes[0]);
+    
+    std::string message = ":Unknown error";
+    for (int i = 0; i < numErrors; i++) {
+        if (errorCodes[i] == errorCode) {
+            message = errorMessages[i];
+            break;
+        }
+    }
+    
+    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + 
+                       (_nickname.empty() ? "*" : _nickname) + " " + message;
+    send(reply, server);
+}
+
+void Client::sendWelcome(IrcServ &server) const {
+    std::string welcome = ":" + std::string(SERVER_NAME) + " " + RPL_WELCOME + " " + _nickname + 
+                         " :Welcome to the Internet Relay Network " + _nickname;
+    std::string yourhost = ":" + std::string(SERVER_NAME) + " " + RPL_YOURHOST + " " + _nickname + 
+                          " :Your host is " + std::string(SERVER_NAME) + ", running version " + std::string(SERVER_VERSION);
+    send(welcome, server);
+    send(yourhost, server);
+}
+
+bool Client::canRegister() const {
+    return _passwordAuthenticated && !_nickname.empty() && !_username.empty() && !_registered;
 }
