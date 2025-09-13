@@ -60,6 +60,12 @@ bool checkJoin(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
   }
+  
+  std::string channelName = cmd.parameters[0];
+  if (channelName.empty() || (channelName[0] != '#' && channelName[0] != '&')) {
+    cmd.errorCode = ERR_NOSUCHCHANNEL;
+    return false;
+  }
   return true;
 }
 
@@ -83,29 +89,49 @@ bool checkQuit(CommandStruct &cmd, IrcServ &serv){
 bool checkKick(CommandStruct &cmd,  IrcServ&serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
+  if(cmd.parameters.size() < 2){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
   return true;
 }
 
 bool checkInvite(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
+  if(cmd.parameters.size() < 2){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
   return true;
 }
 
 bool checkTopic(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
+  if(cmd.parameters.empty()){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
   return true;
 }
 
 bool checkPrivmsg(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
+  if(cmd.parameters.empty() || cmd.trailing.empty()){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
   return true;
 }
 
 bool checkMode(CommandStruct &cmd, IrcServ &serv){
   std::cout << "checked : " GRN << cmd.command << RST << std::endl;
   (void)serv;
+  if(cmd.parameters.empty()){
+    cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
   return true;
 }

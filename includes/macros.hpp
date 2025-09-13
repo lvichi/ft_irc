@@ -43,6 +43,23 @@
 # define NO_SUCH_CMD "Error: this command does not exist\n"
 # define WRONG_PREFIX "Error: usage of prefix is wrong\n Prefix is \"nick[!user]@host\"\n"
 
+// IRC Reply codes (RFC 1459)
+// Welcome messages
+#define RPL_WELCOME             "001"
+#define RPL_YOURHOST            "002"
+#define RPL_CREATED             "003"
+#define RPL_MYINFO              "004"
+
+// Channel replies
+#define RPL_NOTOPIC             "331"
+#define RPL_TOPIC               "332"
+#define RPL_NAMREPLY            "353"
+#define RPL_ENDOFNAMES          "366"
+
+// Server settings
+#define SERVER_NAME             "ft_irc"
+#define SERVER_VERSION          "1.0"
+
 typedef enum e_error {
   ERR_NOSUCHNICK        = 401, // target nick does not exist
   ERR_NOSUCHCHANNEL     = 403, // no such channel
@@ -93,6 +110,45 @@ typedef enum e_error {
   ERR_UMODEUNKNOWNFLAG  = 501, // unknown user mode flag
   ERR_USERSDONTMATCH    = 502  // cannot change modes for other users
 } t_error;
+
+// Error messages for IRC protocol
+#define CMT_NOSUCHNICK          ":No such nick/channel"
+#define CMT_NOSUCHCHANNEL       ":No such channel"
+#define CMT_CANNOTSENDTOCHAN    ":Cannot send to channel"
+#define CMT_TOOMANYCHANNELS     ":You have joined too many channels"
+#define CMT_NOORIGIN            ":No origin specified"
+#define CMT_NORECIPIENT         ":No recipient given"
+#define CMT_NOTEXTTOSEND        ":No text to send"
+#define CMT_NOTOPLEVEL          ":No toplevel domain specified"
+#define CMT_WILDTOPLEVEL        ":Wildcard in toplevel domain"
+#define CMT_BADMASK             ":Bad Server/host mask"
+#define CMT_INPUTTOOLONG        ":Input line was too long"
+#define CMT_UNKNOWNCOMMAND      ":Unknown command"
+#define CMT_NOMOTD              ":MOTD File is missing"
+#define CMT_NONICKNAMEGIVEN     ":No nickname given"
+#define CMT_ERRONEUSNICKNAME    ":Erroneous nickname"
+#define CMT_NICKNAMEINUSE       ":Nickname is already in use"
+#define CMT_USERNOTINCHANNEL    ":They aren't on that channel"
+#define CMT_NOTONCHANNEL        ":You're not on that channel"
+#define CMT_USERONCHANNEL       ":is already on channel"
+#define CMT_NOTREGISTERED       ":You have not registered"
+#define CMT_NEEDMOREPARAMS      ":Not enough parameters"
+#define CMT_ALREADYREGISTERED   ":You may not reregister"
+#define CMT_PASSWDMISMATCH      ":Password incorrect"
+#define CMT_YOUREBANNEDCREEP    ":You are banned from this server"
+#define CMT_CHANNELISFULL       ":Cannot join channel (+l)"
+#define CMT_UNKNOWNMODE         ":is unknown mode char to me"
+#define CMT_INVITEONLYCHAN      ":Cannot join channel (+i)"
+#define CMT_BANNEDFROMCHAN      ":Cannot join channel (+b)"
+#define CMT_BADCHANNELKEY       ":Cannot join channel (+k)"
+#define CMT_BADCHANMASK         ":Bad Channel Mask"
+#define CMT_NOCHANMODES         ":Channel doesn't support modes"
+#define CMT_BANLISTFULL         ":Channel banlist is full"
+#define CMT_NOPRIVILEGES        ":Permission Denied- You're not an IRC operator"
+#define CMT_CHANOPRIVSNEEDED    ":You're not channel operator"
+#define CMT_NOOPERHOST          ":No O-lines for your host"
+#define CMT_UMODEUNKNOWNFLAG    ":Unknown MODE flag"
+#define CMT_USERSDONTMATCH      ":Cant change mode for other users"
 
 //typedef bool (*cmds[8])(std::list<CommandStruct> cmd);
 

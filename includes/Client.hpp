@@ -2,6 +2,7 @@
 
 #include <string>
 #include "../includes/IrcServ.hpp"
+#include "../includes/macros.hpp"
 
 class Client {
 private:
@@ -37,4 +38,10 @@ public:
     void setPasswordAuthenticated(bool auth);
 
     void send(const std::string &message, IrcServ &server) const;
+    
+    std::string getFullPrefix() const;  // "nick!user@host"
+    void sendError(IrcServ &server, t_error errorCode, const std::string& message) const;
+    void sendError(IrcServ &server, t_error errorCode) const;
+    void sendWelcome(IrcServ &server) const;
+    bool canRegister() const;
 };

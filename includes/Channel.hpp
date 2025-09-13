@@ -70,5 +70,7 @@ public:
     bool                        isEmpty() const;
     unsigned int                getMemberCount() const;
     std::string                 getMembersList() const;
-    void                        broadcast(const std::string& message, Client* sender = NULL) const;
+    void                        broadcast(const std::string& message, class IrcServ& server) const;
+    void                        sendJoinMessages(Client* client, class IrcServ& server) const;
+    void                        sendPartMessages(Client* client, const std::string& reason, class IrcServ& server) const;
 };
