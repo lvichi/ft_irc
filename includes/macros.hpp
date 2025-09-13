@@ -14,12 +14,15 @@
 #include "parseCommands.hpp"
 
 #define BELL "\a"
-#define TAG_LIMIT 14
+#define PARAM_MAX 14
+#define NICK_MAX 9
 #define CRLF "\r\n"
 #define SPECIAL "[]\\`^{}"
 #define HYPHEN "-"
 #define DIGITS "0123456789"
 #define ALPHAS "abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ"
+#define CHANNEL_MAX 50
+#define CHANNEL_PREFIX "#&!+"
 
 //colour prints
 
@@ -36,12 +39,11 @@
 # define WHT "\e[1;37m"
 # define CLR "\e[0;39m"
 
-//ERROR messages
+//ERROR status messages
 
 # define INVAL_CHAR "Error: invalid character input\n" //\a \0
 # define TOO_MANY_TAGS "Error: this command has too many tags\n"
 # define NO_SUCH_CMD "Error: this command does not exist\n"
-# define WRONG_PREFIX "Error: usage of prefix is wrong\n Prefix is \"nick[!user]@host\"\n"
 
 // IRC Reply codes (RFC 1459)
 // Welcome messages
@@ -154,6 +156,7 @@ typedef enum e_error {
 
 typedef enum e_cmd{
 	PASS,
+	USER,
 	NICK,
 	KICK,
 	INVITE,

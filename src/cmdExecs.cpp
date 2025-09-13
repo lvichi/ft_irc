@@ -16,18 +16,6 @@ static bool isNicknameInUse(const std::string& nick, IrcServ& serv) {
     return false;
 }
 
-void execPass(CommandStruct &cmd, IrcServ &serv);
-void execNick(CommandStruct &cmd, IrcServ &serv);
-void execUser(CommandStruct &cmd, IrcServ &serv);
-void execJoin(CommandStruct &cmd, IrcServ &serv);
-void execPart(CommandStruct &cmd, IrcServ &serv);
-void execQuit(CommandStruct &cmd, IrcServ &serv);
-void execKick(CommandStruct &cmd, IrcServ &serv);
-void execInvite(CommandStruct &cmd, IrcServ &serv);
-void execTopic(CommandStruct &cmd, IrcServ &serv);
-void execPrivmsg(CommandStruct &cmd, IrcServ &serv);
-void execMode(CommandStruct &cmd, IrcServ &serv);
-
 void  execPass(CommandStruct &cmd, IrcServ &serv)
 {
   Client* client = serv.getClient(cmd.clientFD);

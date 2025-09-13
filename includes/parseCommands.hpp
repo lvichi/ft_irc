@@ -29,6 +29,7 @@ typedef bool (*checks[11])(CommandStruct &cmd, IrcServ &serv);
 typedef void (*execs[11])(CommandStruct &cmd, IrcServ &serv);
 
 bool checkPass(CommandStruct &cmd, IrcServ &serv);
+bool checkUser(CommandStruct &cmd, IrcServ &serv);
 bool checkNick(CommandStruct &cmd, IrcServ &serv);
 bool checkUser(CommandStruct &cmd, IrcServ &serv);
 bool checkJoin(CommandStruct &cmd, IrcServ &serv);
@@ -41,6 +42,7 @@ bool checkPrivmsg(CommandStruct &cmd,IrcServ &serv);
 bool checkMode(CommandStruct &cmd, IrcServ &serv);
 
 void execPass(CommandStruct &cmd, IrcServ &  serv);
+void execUser(CommandStruct &cmd, IrcServ &  serv);
 void execNick(CommandStruct &cmd, IrcServ & serv);
 void execUser(CommandStruct &cmd, IrcServ & serv);
 void execJoin(CommandStruct &cmd, IrcServ & serv);
