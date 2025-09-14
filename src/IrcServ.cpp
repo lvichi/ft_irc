@@ -73,9 +73,13 @@ void IrcServ::runServer()
       if ( it->revents & POLLOUT )
         sendMessages( *it );
 
-      outgoingMessages.find( it->fd ) != outgoingMessages.end() ?
-         it->events = ( POLLOUT | POLLIN ) : it->events = POLLIN;
-
+      // Corrigir POLLOUT para outros clients que precisam enviar mensagens
+      if (outgoingMessages.find(it->fd) != outgoingMessages.end()) {
+        it->events |= POLLOUT;
+      } else {
+        it->events &= ~POLLOUT;
+      }
+      it->events |= POLLIN;
     }
   }
   std::cout << "\rServer shutting down." << std::endl;
@@ -224,12 +228,26 @@ void IrcServ::sendMessages( pollfd& clientFD )
   if ( buffer.empty() )
     outgoingMessages.erase(clientFD.fd);
 
+  // Limpa o POLLOUT se não houver mais mensagens para enviar
+  if (buffer.empty()) {
+    clientFD.events &= ~POLLOUT;
+    clientFD.events |= POLLIN;
+  }
+
   return;
 }
 
 void IrcServ::outgoingMessage( int clientFD, const std::string& message )
 {
   outgoingMessages[clientFD] += message;
+  
+  // Adiciona o POLLOUT para que o client consiga fazer o broadcast da mensagem
+  for (std::vector<pollfd>::iterator it = poolFDs.begin(); it != poolFDs.end(); ++it) {
+    if (it->fd == clientFD) {
+      it->events |= POLLOUT;
+      break;
+    }
+  }
 }
 
 
