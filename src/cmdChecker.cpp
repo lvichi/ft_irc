@@ -260,6 +260,11 @@ bool checkMode(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
   }
+  std::string cName = cmd.parameters[0];
+  if (std::string(CHANNEL_PREFIX).find(cName[0]) == std::string::npos){
+    cmd.errorCode = ERR_BADCHANMASK;
+    return false;
+  }
   Channel *channel = serv.getChannel(cmd.parameters[0]);
   if (!channel){
     cmd.errorCode = ERR_NOSUCHCHANNEL;
