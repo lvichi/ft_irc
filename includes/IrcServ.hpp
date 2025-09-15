@@ -43,6 +43,7 @@ class IrcServ
 
     const unsigned int                    port;
     const std::string                     password;
+    const bool                            debug;
     std::vector<pollfd>                   poolFDs;
     std::map<unsigned int, std::string>   fdBuffers;
     std::map<unsigned int, std::string>   outgoingMessages;
@@ -57,12 +58,13 @@ class IrcServ
     void            sendMessages( pollfd& clientFD );
 
   public:
-    IrcServ( const unsigned int port, const std::string& password );
+    IrcServ( const unsigned int port, const std::string& password, const bool debug );
     ~IrcServ();
 
     void            runServer();
     void            outgoingMessage( int clientFD, const std::string& message );
     bool            isPasswordValid( const std::string& pass ) const;
+    bool            isDebug() const;
     
     // Client management
     void            addClient( int fd );
