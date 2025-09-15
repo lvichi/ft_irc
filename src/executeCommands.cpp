@@ -68,17 +68,18 @@ static void normalizeInput(std::string &cmd){
 //note: only check pass being implemented currently, execs are all placeholders
 //note: list of clients, server pass, nicklist, channel list, mode list
 static int findAndExec(CommandStruct &command, IrcServ &serv){
-  const char *cmds[11] = {"PASS", "NICK", "USER", "JOIN", "PART", "QUIT", "KICK",
-	  "INVITE", "TOPIC", "PRIVMSG", "MODE"};
-  const checks cf = {checkPass, checkNick, checkUser, checkJoin, checkPart,
-	  checkQuit, checkKick, checkInvite, checkTopic, checkPrivmsg, checkMode};
-  const execs ef = {execPass, execNick, execUser, execJoin, execPart, execQuit,
-	  execKick, execInvite, execTopic, execPrivmsg, execMode};
+  const char *cmds[12] = {"PING", "PRIVMSG", "PASS", "NICK", "USER", "JOIN",
+    "PART", "QUIT", "KICK", "INVITE", "TOPIC", "MODE"};
+  const checks cf = {checkPing, checkPrivmsg, checkPass, checkNick, checkUser,
+    checkJoin, checkPart, checkQuit, checkKick, checkInvite, checkTopic, checkMode};
+  const execs ef = {execPing, execPrivmsg, execPass, execNick, execUser, execJoin,
+    execPart, execQuit, execKick, execInvite, execTopic, execMode};
 
   normalizeInput(command.command);
-  for (int i = 0; i < 11; i++){
+  for (int i = 0; i < 12; i++){
     if (command.command == cmds[i]){
       if (cf[i](command, serv) && command.errorCode != 0) {
+        std::cout << RED "Command: " << command.command << RST << std::endl;
           ef[i](command, serv);
           return 0;
       } else {

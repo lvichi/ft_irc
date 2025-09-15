@@ -7,6 +7,16 @@
 #include <sstream>
 #include <set>
 
+void    execPing(CommandStruct &cmd, IrcServ &serv){
+  Client* client = serv.getClient(cmd.clientFD);
+  if (!client)
+      return;
+
+  std::string pongMsg = ":" + std::string (SERVER_NAME) + " "
+    + "PONG" + " " + cmd.parameters[0];
+  client->send(pongMsg, serv);
+}
+
 static bool isNicknameInUse(const std::string& nick, IrcServ& serv) {
     const std::map<int, Client*>& clients = serv.getClients();
     for (std::map<int, Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it) {

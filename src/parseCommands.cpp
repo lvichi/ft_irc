@@ -65,6 +65,7 @@ void  parseCommands( IrcServ& server, std::string& message, unsigned int clientF
 	CommandStruct             cmd;
 	std::string               eoc = CRLF;
 
+	std::cout << PRP << message << RST << std::endl;
 	while ( true ) {
 		std::string::iterator it = message.begin();
 		std::string::iterator endOfCommand;

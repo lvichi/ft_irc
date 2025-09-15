@@ -5,6 +5,15 @@
 #include "../includes/Channel.hpp"
 #include "../includes/Client.hpp"
 
+bool checkPing(CommandStruct &cmd, IrcServ &serv){
+  (void)serv;
+  if(cmd.parameters.empty()){
+    cmd.errorCode = ERR_NOORIGIN;
+    return false;
+  }
+  return true;
+}
+
 bool checkPass(CommandStruct &cmd, IrcServ &serv){
   (void)serv;
   if(cmd.parameters.empty() || cmd.parameters.size() != 1){
@@ -99,26 +108,28 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
   }
-  else if (chan.find_first_of(cmd.parameters.front()[0]) == std::string::npos
+  std::string cName = cmd.parameters[0];
+  if (chan.find_first_of(cName[0]) == std::string::npos
       || cmd.parameters.front().find_first_of(',') != std::string::npos){
     cmd.errorCode = ERR_BADCHANMASK;
 	return false;
   }
-  Channel *chn = serv.getChannel(std::string (chan, chan[1], chan.npos));
+  Channel *chn = serv.getChannel(cName);
   if (!chn){
 	  cmd.errorCode = ERR_NOSUCHCHANNEL;
 	  return false;
   }
-  else if (!chn->isOperator(clt)){
-	  cmd.errorCode = ERR_CHANOPRIVSNEEDED;
-	  return false;
+  if (!chn->isOperator(clt)){
+    cmd.errorCode = ERR_CHANOPRIVSNEEDED;
+    return false;
   }
   std::vector<std::string>::iterator it = cmd.parameters.begin();
   ++it;
-  std::string usr = *it;
-  (void)usr;
-  //std::list<std::string> membs = chn->getMembersList();
-  //todo check for user being in previously checked channel;
+  std::string membs = chn->getMembersList();
+  if (membs.find(*it) == std::string::npos){
+    cmd.errorCode = ERR_NOSUCHNICK;
+    return false;
+  }
   return true;
 }
 
