@@ -24,10 +24,11 @@ struct CommandStruct
   unsigned int                        errorCode;
 };
 
-typedef bool (*checks[11])(CommandStruct &cmd, IrcServ &serv);
+typedef bool (*checks[12])(CommandStruct &cmd, IrcServ &serv);
 
-typedef void (*execs[11])(CommandStruct &cmd, IrcServ &serv);
+typedef void (*execs[12])(CommandStruct &cmd, IrcServ &serv);
 
+bool checkPing(CommandStruct &cmd, IrcServ &serv);
 bool checkPass(CommandStruct &cmd, IrcServ &serv);
 bool checkUser(CommandStruct &cmd, IrcServ &serv);
 bool checkNick(CommandStruct &cmd, IrcServ &serv);
@@ -41,6 +42,7 @@ bool checkTopic(CommandStruct &cmd, IrcServ &serv);
 bool checkPrivmsg(CommandStruct &cmd,IrcServ &serv);
 bool checkMode(CommandStruct &cmd, IrcServ &serv);
 
+void execPing(CommandStruct &cmd, IrcServ &  serv);
 void execPass(CommandStruct &cmd, IrcServ &  serv);
 void execUser(CommandStruct &cmd, IrcServ &  serv);
 void execNick(CommandStruct &cmd, IrcServ & serv);
@@ -54,6 +56,8 @@ void execTopic(CommandStruct &cmd, IrcServ &serv);
 void execPrivmsg(CommandStruct &cmd, IrcServ &serv);
 void execMode(CommandStruct &cmd, IrcServ &serv);
 
+bool isNicknameInUse(const std::string& nick, IrcServ& serv);
+bool isUsernameInUse(const std::string& user, IrcServ& serv);
 void  parseCommands( IrcServ& server, std::string& message, unsigned int clientFD );
 
 /*

@@ -23,6 +23,8 @@
 #define ALPHAS "abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ"
 #define CHANNEL_MAX 50
 #define CHANNEL_PREFIX "#&!+"
+#define MOD_CHANGE "-+"
+#define ALLOWED_MODES "itkol"
 
 //colour prints
 

@@ -40,6 +40,7 @@ static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
 	std::istringstream fullCmd(cmdLine);
 	std::string tok;
 	bool hasTrailing = false;
+	cmd.errorCode = 0;
 
 	fullCmd >> tok;
 	cmd.command = tok;
@@ -65,6 +66,7 @@ void  parseCommands( IrcServ& server, std::string& message, unsigned int clientF
 	CommandStruct             cmd;
 	std::string               eoc = CRLF;
 
+	std::cout << PRP << message << RST << std::endl;
 	while ( true ) {
 		std::string::iterator it = message.begin();
 		std::string::iterator endOfCommand;

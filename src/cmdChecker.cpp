@@ -5,6 +5,15 @@
 #include "../includes/Channel.hpp"
 #include "../includes/Client.hpp"
 
+bool checkPing(CommandStruct &cmd, IrcServ &serv){
+  (void)serv;
+  if(cmd.parameters.empty()){
+    cmd.errorCode = ERR_NOORIGIN;
+    return false;
+  }
+  return true;
+}
+
 bool checkPass(CommandStruct &cmd, IrcServ &serv){
   (void)serv;
   if(cmd.parameters.empty() || cmd.parameters.size() != 1){
@@ -15,16 +24,22 @@ bool checkPass(CommandStruct &cmd, IrcServ &serv){
 }
 
 bool checkUser(CommandStruct &cmd, IrcServ &serv){
+  (void)serv;
   if(cmd.parameters.empty() || cmd.parameters.size() != 3 
       || cmd.trailing.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
-    serv.outgoingMessage(cmd.clientFD, "");
     return false;
   }
-
   if (cmd.parameters.front().find_first_of(CRLF"@ \0")
-      != cmd.parameters.front().npos)
+      != cmd.parameters.front().npos){
+    cmd.errorCode = ERR_ERRONEUSNICKNAME;
     return false;
+  }
+  std::string usr(cmd.parameters[0]);
+  if (isUsernameInUse(usr, serv)){
+    cmd.errorCode = ERR_ALREADYREGISTERED;
+    return false;
+  }
   return true;
 }
 
@@ -57,7 +72,7 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
 
 //KICK <channel>*(,channel) <user>*(,user) [<comment>]
 
-//join need to check for +i and +o;
+//join need to check for +i and +k;
 bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
   (void)serv;
 
@@ -65,20 +80,58 @@ bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
   }
-  
   std::string channelName = cmd.parameters[0];
   if (channelName.empty() 
 		  || std::string(CHANNEL_PREFIX).find_first_of(channelName[0]) == std::string::npos){
     cmd.errorCode = ERR_NOSUCHCHANNEL;
     return false;
   }
+  Channel *chn = serv.getChannel(channelName);
+  if (!chn){
+    return true;
+  }
+  else if (chn->isInviteOnly()){ //+i
+    cmd.errorCode = ERR_INVITEONLYCHAN;
+    return false;
+  }
+  else if (chn->hasKey()){ // +k
+    if (cmd.parameters.size() < 2){
+      cmd.errorCode = ERR_NEEDMOREPARAMS;
+      return false;
+    }
+    std::vector<std::string>::iterator key(cmd.parameters.begin());
+    key++;
+    if (chn->getKey() != *key){
+      cmd.errorCode = ERR_BADCHANNELKEY;
+      return false;
+    }
+  }
   return true;
 }
 
 bool checkPart(CommandStruct &cmd, IrcServ &serv){
-  (void)serv;
+  Client* client = serv.getClient(cmd.clientFD);
+  if (!client){
+    cmd.errorCode = ERR_NOORIGIN;
+    return false;
+  }
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
+  std::string channelName = cmd.parameters[0];
+  if (channelName.empty() 
+		  || std::string(CHANNEL_PREFIX).find_first_of(channelName[0]) == std::string::npos){
+    cmd.errorCode = ERR_BADCHANMASK;
+    return false;
+  }
+  Channel* chn = serv.getChannel(channelName);
+  if (!chn) {
+    cmd.errorCode = ERR_NOSUCHCHANNEL;
+    return false;
+  }
+  if (!chn->isMember(client)) {
+    cmd.errorCode = ERR_NOTONCHANNEL;
     return false;
   }
   return true;
@@ -99,48 +152,85 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
   }
-  else if (chan.find_first_of(cmd.parameters.front()[0]) == std::string::npos
+  std::string cName = cmd.parameters[0];
+  if (chan.find_first_of(cName[0]) == std::string::npos
       || cmd.parameters.front().find_first_of(',') != std::string::npos){
     cmd.errorCode = ERR_BADCHANMASK;
 	return false;
   }
-  Channel *chn = serv.getChannel(std::string (chan, chan[1], chan.npos));
+  Channel *chn = serv.getChannel(cName);
   if (!chn){
 	  cmd.errorCode = ERR_NOSUCHCHANNEL;
 	  return false;
   }
-  else if (!chn->isOperator(clt)){
-	  cmd.errorCode = ERR_CHANOPRIVSNEEDED;
-	  return false;
+  if (!chn->isOperator(clt)){
+    cmd.errorCode = ERR_CHANOPRIVSNEEDED;
+    return false;
   }
   std::vector<std::string>::iterator it = cmd.parameters.begin();
   ++it;
-  std::string usr = *it;
-  (void)usr;
-  //std::list<std::string> membs = chn->getMembersList();
-  //todo check for user being in previously checked channel;
+  std::string membs = chn->getMembersList();
+  if (membs.find(*it) == std::string::npos){
+    cmd.errorCode = ERR_NOSUCHNICK;
+    return false;
+  }
   return true;
 }
 
 //need to implement +i check for it;
 bool checkInvite(CommandStruct &cmd, IrcServ &serv){
+  Client *client = serv.getClient(cmd.clientFD);
+  if (!client){
+    cmd.errorCode = ERR_NOORIGIN;
+    return false;
+  }
   if(cmd.parameters.empty() || cmd.parameters.size() != 2){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
   }
-
   else if (!cmd.trailing.empty()){
     cmd.errorCode = ERR_INPUTTOOLONG;
-    serv.outgoingMessage(cmd.clientFD, "");
+    return false;
+  }
+  std::string user(cmd.parameters[0]);
+  Channel *chan = serv.getChannel(cmd.parameters[1]);
+  if (!chan){
+    cmd.errorCode = ERR_NOSUCHCHANNEL;
+    return false;
+  }
+  else if (!chan->isMember(client)){
+    cmd.errorCode = ERR_NOTONCHANNEL;
+    return false;
+  }
+  else if (!isNicknameInUse(user, serv)){
+    cmd.errorCode = ERR_NOSUCHNICK;
+    return false;
+  }
+  if (chan->isInviteOnly() && !chan->isOperator(client)){
+    cmd.errorCode = ERR_CHANOPRIVSNEEDED;
+    return false;
   }
   return true;
 }
 
 //need to implement +t to it;
 bool checkTopic(CommandStruct &cmd, IrcServ &serv){
-  (void)serv;
+  Client *client = serv.getClient(cmd.clientFD);
+  if (!client){
+    cmd.errorCode = ERR_NOORIGIN;
+    return false;
+  }
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
+    return false;
+  }
+  Channel *channel = serv.getChannel(cmd.parameters[0]);
+  if (!channel){
+    cmd.errorCode = ERR_NOSUCHCHANNEL;
+    return false;
+  }
+  if (!channel->isMember(client)){
+    cmd.errorCode = ERR_NOTONCHANNEL;
     return false;
   }
   return true;
@@ -148,18 +238,64 @@ bool checkTopic(CommandStruct &cmd, IrcServ &serv){
 
 bool checkPrivmsg(CommandStruct &cmd, IrcServ &serv){
   (void)serv;
-  if(cmd.parameters.empty() || cmd.trailing.empty()){
-    cmd.errorCode = ERR_NEEDMOREPARAMS;
+  if(cmd.parameters.empty()){
+    cmd.errorCode = ERR_NORECIPIENT;
+    return false;
+  }
+  else if (cmd.trailing.empty()){
+    cmd.errorCode = ERR_NOTEXTTOSEND;
     return false;
   }
   return true;
 }
 
+//MODE: +i, +t, +k, +o, +l;
 bool checkMode(CommandStruct &cmd, IrcServ &serv){
-  (void)serv;
+  Client *client = serv.getClient(cmd.clientFD);
+  if (!client){
+    cmd.errorCode = ERR_NOORIGIN;
+    return false;
+  }
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
+  }
+  std::string cName = cmd.parameters[0];
+  if (std::string(CHANNEL_PREFIX).find(cName[0]) == std::string::npos){
+    cmd.errorCode = ERR_BADCHANMASK;
+    return false;
+  }
+  Channel *channel = serv.getChannel(cmd.parameters[0]);
+  if (!channel){
+    cmd.errorCode = ERR_NOSUCHCHANNEL;
+    return false;
+  }
+  if (!channel->isMember(client)){
+    cmd.errorCode = ERR_NOTONCHANNEL;
+    return false;
+  }
+  if (cmd.parameters.size() > 1){
+    std::string modeString(cmd.parameters[1]);
+    if (modeString.find_first_not_of(ALLOWED_MODES MOD_CHANGE) != modeString.npos || 
+	(std::string(MOD_CHANGE).find_first_of(modeString[0]) == std::string::npos)){
+      cmd.errorCode = ERR_UNKNOWNMODE;
+      return false;
+    }
+    if (!channel->isOperator(client)){
+      cmd.errorCode = ERR_CHANOPRIVSNEEDED;
+      return false;
+    }
+    if ((modeString.find_first_of("ok")) != modeString.npos 
+	&& cmd.parameters.size() < 3){
+      cmd.errorCode = ERR_NEEDMOREPARAMS;
+      return false;
+    }
+    if (modeString.find_first_of('l') != modeString.npos){
+      if (modeString[0] == '+' && cmd.parameters.size() < 3){
+	cmd.errorCode = ERR_NEEDMOREPARAMS;
+	return false;
+      }
+    }
   }
   return true;
 }
