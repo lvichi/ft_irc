@@ -59,7 +59,7 @@
 #define RPL_ENDOFNAMES          "366"
 
 // Server settings
-#define SERVER_NAME             "ft_irc (lvichi, rapcampo, errgrab)"
+#define SERVER_NAME             "ft_irc" // Spaces here can cause issues
 #define SERVER_VERSION          "0.42"
 
 typedef enum e_error {

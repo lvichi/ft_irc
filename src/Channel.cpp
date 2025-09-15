@@ -90,6 +90,7 @@ bool Channel::canJoin(Client* client, const std::string& key) const {
 
 void Channel::addMember(Client* client) {
     _members.insert(client);
+    client->addChannel(_name);
     if (_members.size() == 1) {
         _operators.insert(client);
     }
@@ -99,6 +100,7 @@ void Channel::removeMember(Client* client) {
     _members.erase(client);
     _operators.erase(client);
     _invited.erase(client);
+    client->removeChannel(_name);
 }
 
 void Channel::addOperator(Client* client) {
@@ -172,4 +174,34 @@ void Channel::sendJoinMessages(Client* client, IrcServ& server) const {
 void Channel::sendPartMessages(Client* client, const std::string& reason, IrcServ& server) const {
     std::string partMsg = ":" + client->getFullPrefix() + " PART " + _name + " :" + reason;
     broadcast(partMsg, server);
+}
+
+void Channel::sendKickMessage(Client* sender, Client* target, const std::string& msg, IrcServ& serv) {
+    std::string kickMsg = ":" + sender->getNickname() + "!" + sender->getUsername() + "@" + sender->getHostname() + " KICK " + getName() + " " + target->getNickname() + " :" + msg + "\r\n";
+    for (std::set<Client*>::iterator it = _members.begin(); it != _members.end(); ++it)
+        serv.outgoingMessage((*it)->getFd(), kickMsg);
+}
+
+void Channel::sendTopic(Client* client, IrcServ& serv) {
+    std::string topicMsg = ":" + std::string(SERVER_NAME) + " 332 " + client->getNickname() + " " + getName() + " :" + getTopic() + "\r\n";
+    serv.outgoingMessage(client->getFd(), topicMsg);
+}
+
+void Channel::broadcastTopic(Client* client, IrcServ& serv) {
+    std::string topicMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " TOPIC " + getName() + " :" + getTopic() + "\r\n";
+    for (std::set<Client*>::iterator it = _members.begin(); it != _members.end(); ++it)
+        serv.outgoingMessage((*it)->getFd(), topicMsg);
+}
+
+void Channel::broadcastPrivmsg(Client* sender, const std::string& msg, IrcServ& serv) {
+    std::string privMsg = ":" + sender->getNickname() + "!" + sender->getUsername() + "@" + sender->getHostname() + " PRIVMSG " + getName() + " :" + msg + "\r\n";
+    for (std::set<Client*>::iterator it = _members.begin(); it != _members.end(); ++it)
+        if (*it != sender)
+            serv.outgoingMessage((*it)->getFd(), privMsg);
+}
+
+void Channel::handleMode(Client* client, CommandStruct& cmd, IrcServ& serv) {
+    (void)cmd;
+    // Minimal stub: just acknowledge
+    serv.outgoingMessage(client->getFd(), ":MODE command received\r\n");
 }

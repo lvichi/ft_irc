@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <set>
 #include "../includes/IrcServ.hpp"
 #include "../includes/macros.hpp"
 
@@ -13,6 +14,7 @@ private:
     std::string _hostname;
     bool _registered;
     bool _passwordAuthenticated;
+    std::set<std::string> _channels;
 
 public:
     Client();
@@ -38,10 +40,16 @@ public:
     void authenticatePassword();
 
     void send(const std::string &message, IrcServ &server) const;
-    
+    void sendInvite(IrcServ& serv, const std::string& channelName);
+    void sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv);
+
     std::string getFullPrefix() const;  // "nick!user@host"
     void sendError(IrcServ &server, t_error errorCode, const std::string& message) const;
     void sendError(IrcServ &server, t_error errorCode) const;
     void sendWelcome(IrcServ &server) const;
     bool canRegister() const;
+    std::set<std::string> getChannels() const;
+    void addChannel(const std::string& channelName);
+    void removeChannel(const std::string& channelName);
+    void handleUserMode(CommandStruct& cmd, IrcServ& serv);
 };
