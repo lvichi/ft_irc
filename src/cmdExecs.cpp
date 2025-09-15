@@ -268,8 +268,8 @@ void execQuit(CommandStruct &cmd, IrcServ &serv)
             if (channel->isEmpty()) serv.removeChannel(*it);
         }
     }
-    serv.removeClient(cmd.clientFD);
     std::cout << "Client " << (client->getNickname().empty() ? "unknown" : client->getNickname()) << " quit: " << quitMessage << std::endl;
+    serv.removeClient(cmd.clientFD);
 }
 
 void execMode(CommandStruct &cmd, IrcServ &serv)

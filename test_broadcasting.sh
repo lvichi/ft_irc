@@ -7,7 +7,7 @@ pkill -f ircserv 2>/dev/null
 
 # Start server
 cd /workspaces/ft_irc
-./ircserv 6667 senha &
+valgrind --leak-check=full --show-leak-kinds=all ./ircserv 6667 senha &
 SERVER_PID=$!
 echo "Server started with PID: $SERVER_PID"
 sleep 2
@@ -61,10 +61,10 @@ CLIENT3_PID=$!
 sleep 5
 
 # Kill processes
-kill $CLIENT1_PID 2>/dev/null
-kill $CLIENT2_PID 2>/dev/null
-kill $CLIENT3_PID 2>/dev/null
-kill $SERVER_PID 2>/dev/null
+kill -SIGINT $CLIENT1_PID 2>/dev/null
+kill -SIGINT $CLIENT2_PID 2>/dev/null
+kill -SIGINT $CLIENT3_PID 2>/dev/null
+kill -SIGINT $SERVER_PID 2>/dev/null
 
 echo ""
 echo "=== Test Complete ==="
