@@ -19,8 +19,8 @@
 volatile sig_atomic_t g_endServer = 0;
 
 
-IrcServ::IrcServ( unsigned int port, const std::string& password )
-  : port( port ), password( password ) {}
+IrcServ::IrcServ( unsigned int port, const std::string& password, bool debug )
+  : port( port ), password( password ), debug( debug ) {}
 
 
 IrcServ::~IrcServ()
@@ -72,15 +72,16 @@ void IrcServ::runServer()
 
       if ( it->revents & POLLOUT )
         sendMessages( *it );
-
-      // Corrigir POLLOUT para outros clients que precisam enviar mensagens
-      if (outgoingMessages.find(it->fd) != outgoingMessages.end()) {
-        it->events |= POLLOUT;
-      } else {
-        it->events &= ~POLLOUT;
-      }
-      it->events |= POLLIN;
     }
+
+    for ( it = poolFDs.begin(); it != poolFDs.end(); ++it ) {
+      if ( outgoingMessages.find( it->fd ) != outgoingMessages.end() ) {
+        it->events = POLLIN | POLLOUT;
+      } else {
+        it->events = POLLIN;
+      }
+    }
+
   }
   std::cout << "\rServer shutting down." << std::endl;
 }
@@ -226,13 +227,7 @@ void IrcServ::sendMessages( pollfd& clientFD )
   buffer.erase( 0, bytesSent );
 
   if ( buffer.empty() )
-    outgoingMessages.erase(clientFD.fd);
-
-  // Limpa o POLLOUT se não houver mais mensagens para enviar
-  if (buffer.empty()) {
-    clientFD.events &= ~POLLOUT;
-    clientFD.events |= POLLIN;
-  }
+    outgoingMessages.erase( clientFD.fd );
 
   return;
 }
@@ -240,20 +235,16 @@ void IrcServ::sendMessages( pollfd& clientFD )
 void IrcServ::outgoingMessage( int clientFD, const std::string& message )
 {
   outgoingMessages[clientFD] += message;
-  
-  // Adiciona o POLLOUT para que o client consiga fazer o broadcast da mensagem
-  for (std::vector<pollfd>::iterator it = poolFDs.begin(); it != poolFDs.end(); ++it) {
-    if (it->fd == clientFD) {
-      it->events |= POLLOUT;
-      break;
-    }
-  }
 }
-
 
 bool IrcServ::isPasswordValid( const std::string& pass ) const
 {
   return pass == password;
+}
+
+bool IrcServ::isDebug() const
+{
+  return debug;
 }
 
 // Client management methods
