@@ -17,15 +17,6 @@ void    execPing(CommandStruct &cmd, IrcServ &serv){
   client->send(pongMsg, serv);
 }
 
-static bool isNicknameInUse(const std::string& nick, IrcServ& serv) {
-    const std::map<int, Client*>& clients = serv.getClients();
-    for (std::map<int, Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it) {
-        if (it->second->getNickname() == nick)
-            return true;
-    }
-    return false;
-}
-
 void  execPass(CommandStruct &cmd, IrcServ &serv)
 {
   Client* client = serv.getClient(cmd.clientFD);
@@ -128,10 +119,10 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
         client->sendError(serv, ERR_NOSUCHCHANNEL);
         return;
     }
-    if (!channel->isOperator(client)) {
+   /* if (!channel->isOperator(client)) {
         client->sendError(serv, ERR_CHANOPRIVSNEEDED);
         return;
-    }
+    }*/
     Client* target = serv.getClientByNick(targetNick);
     if (!target) {
         client->sendError(serv, ERR_NOSUCHNICK);
@@ -158,7 +149,7 @@ void execTopic(CommandStruct &cmd, IrcServ &serv)
         client->sendError(serv, ERR_NOSUCHCHANNEL);
         return;
     }
-    if (cmd.parameters.size() == 1) {
+    if (cmd.trailing.empty()) {
         channel->sendTopic(client, serv);
         return;
     }
@@ -166,7 +157,10 @@ void execTopic(CommandStruct &cmd, IrcServ &serv)
         client->sendError(serv, ERR_CHANOPRIVSNEEDED);
         return;
     }
-    channel->setTopic(cmd.parameters[1]);
+    if (cmd.trailing == "\"\"")
+        channel->setTopic("");
+    else
+        channel->setTopic(cmd.trailing);
     channel->broadcastTopic(client, serv);
 }
 
@@ -180,10 +174,10 @@ void execPrivmsg(CommandStruct &cmd, IrcServ &serv)
     }
     std::string target = cmd.parameters[0];
     std::string message = cmd.trailing;
-    if (target.empty() || message.empty()) {
+/*    if (target.empty() || message.empty()) {
         client->sendError(serv, ERR_NORECIPIENT);
         return;
-    }
+    }*/
     if (target[0] == '#') {
         Channel* channel = serv.getChannel(target);
         if (!channel) {
@@ -246,16 +240,6 @@ void  execPart(CommandStruct &cmd, IrcServ &serv)
   std::string partMessage = cmd.trailing.empty() ? "Leaving" : cmd.trailing;
   
   Channel* channel = serv.getChannel(channelName);
-  if (!channel) {
-    client->sendError(serv, ERR_NOSUCHCHANNEL);
-    return;
-  }
-
-  if (!channel->isMember(client)) {
-    client->sendError(serv, ERR_NOTONCHANNEL);
-    return;
-  }
-
   channel->sendPartMessages(client, partMessage, serv);
   channel->removeMember(client);
 

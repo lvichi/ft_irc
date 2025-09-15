@@ -13,7 +13,7 @@
 NAME = ircserv
 
 CPP = c++
-CFLAGS = -Wall -Wextra -Werror -g -std=c++98
+CFLAGS = -Wall -Wextra -Werror -g -std=c++98 #-fsanitize=address
 RM = rm -fr
 FILES = src/*.cpp
 OBJS = obj/*.o

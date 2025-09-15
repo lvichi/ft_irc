@@ -40,6 +40,7 @@ static CommandStruct extractCommand(CommandStruct &cmd, std::string &cmdLine){
 	std::istringstream fullCmd(cmdLine);
 	std::string tok;
 	bool hasTrailing = false;
+	cmd.errorCode = 0;
 
 	fullCmd >> tok;
 	cmd.command = tok;

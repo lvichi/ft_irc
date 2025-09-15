@@ -56,6 +56,8 @@ void execTopic(CommandStruct &cmd, IrcServ &serv);
 void execPrivmsg(CommandStruct &cmd, IrcServ &serv);
 void execMode(CommandStruct &cmd, IrcServ &serv);
 
+bool isNicknameInUse(const std::string& nick, IrcServ& serv);
+bool isUsernameInUse(const std::string& user, IrcServ& serv);
 void  parseCommands( IrcServ& server, std::string& message, unsigned int clientFD );
 
 /*

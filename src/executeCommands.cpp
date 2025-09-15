@@ -78,7 +78,7 @@ static int findAndExec(CommandStruct &command, IrcServ &serv){
   normalizeInput(command.command);
   for (int i = 0; i < 12; i++){
     if (command.command == cmds[i]){
-      if (cf[i](command, serv) && command.errorCode != 0) {
+      if (cf[i](command, serv) && command.errorCode == 0) {
         std::cout << RED "Command: " << command.command << RST << std::endl;
           ef[i](command, serv);
           return 0;
