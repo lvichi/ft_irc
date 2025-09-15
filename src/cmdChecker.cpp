@@ -66,7 +66,7 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
 
 //KICK <channel>*(,channel) <user>*(,user) [<comment>]
 
-//join need to check for +i and +o;
+//join need to check for +i and +k;
 bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
   (void)serv;
 
@@ -74,13 +74,20 @@ bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
   }
-  
   std::string channelName = cmd.parameters[0];
   if (channelName.empty() 
 		  || std::string(CHANNEL_PREFIX).find_first_of(channelName[0]) == std::string::npos){
     cmd.errorCode = ERR_NOSUCHCHANNEL;
     return false;
   }
+ /* Channel *chn = serv.getChannel(channelName);
+  if (!chn){
+    return true;
+  }
+  else if (chn->isInviteOnly()){
+    cmd.errorCode = ERR_INVITEONLYCHAN;
+    return false;
+  }*/
   return true;
 }
 
