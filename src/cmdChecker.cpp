@@ -35,11 +35,11 @@ bool checkUser(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_ERRONEUSNICKNAME;
     return false;
   }
-/*  std::string usr(cmd.parameters[0]);
+  std::string usr(cmd.parameters[0]);
   if (isUsernameInUse(usr, serv)){
     cmd.errorCode = ERR_ALREADYREGISTERED;
     return false;
-  }*/
+  }
   return true;
 }
 

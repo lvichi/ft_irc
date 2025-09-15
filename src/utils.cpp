@@ -24,7 +24,7 @@ bool isNicknameInUse(const std::string& nick, IrcServ& serv) {
 bool isUsernameInUse(const std::string& user, IrcServ& serv) {
     const std::map<int, Client*>& clients = serv.getClients();
     for (std::map<int, Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it) {
-        if (it->second->getNickname() == user)
+        if (it->second->getUsername() == user)
             return true;
     }
     return false;
