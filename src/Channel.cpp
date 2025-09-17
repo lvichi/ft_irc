@@ -189,8 +189,20 @@ void Channel::sendTopic(Client* client, IrcServ& serv) {
 }
 
 void Channel::sendMode(Client* client, IrcServ& serv) {
-    std::string topicMsg = ":" + std::string(SERVER_NAME) + " 324 " + client->getNickname() + " " + getName() + "-> " + getModes() + "\r\n";
-    serv.outgoingMessage(client->getFd(), topicMsg);
+    std::stringstream topicMsg;
+    topicMsg << ":" + std::string(SERVER_NAME) + " 324 " + client->getNickname() + " " + getName() + "-> " + getModes();
+    if (hasKey()){
+        topicMsg << " ";
+        if (isOperator(client))
+            topicMsg << getKey();
+        else
+            topicMsg << "***";
+    }
+    if (hasUserLimit()){
+        topicMsg << " " << getUserLimit();
+    }
+    topicMsg << "\r\n";
+    serv.outgoingMessage(client->getFd(), topicMsg.str());
 }
 
 void Channel::broadcastTopic(Client* client, IrcServ& serv) {
@@ -205,8 +217,6 @@ void Channel::broadcastPrivmsg(Client* sender, const std::string& msg, IrcServ& 
         if (*it != sender)
             serv.outgoingMessage((*it)->getFd(), privMsg);
 }
-
-//mode needs to check in the 
 
 void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
         std::deque<std::string> &mode, std::deque<std::string> &param) {
