@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <sstream>
 #include <set>
+#include <string>
+#include <deque>
 
 void    execPing(CommandStruct &cmd, IrcServ &serv){
   Client* client = serv.getClient(cmd.clientFD);
@@ -272,8 +274,13 @@ void execQuit(CommandStruct &cmd, IrcServ &serv)
     serv.removeClient(cmd.clientFD);
 }
 
+//static ssize_t getModeChange(std::string &modeString){
+//}
+
 void execMode(CommandStruct &cmd, IrcServ &serv)
 {
+    char modifier = 0;
+  //  unsigned short operations = 0;
     Client* client = serv.getClient(cmd.clientFD);
     if (!client) return;
     if (!client->isRegistered()) {
@@ -285,14 +292,33 @@ void execMode(CommandStruct &cmd, IrcServ &serv)
         client->sendError(serv, ERR_NEEDMOREPARAMS);
         return;
     }
-    if (target[0] == '#') {
-        Channel* channel = serv.getChannel(target);
-        if (!channel) {
-            client->sendError(serv, ERR_NOSUCHCHANNEL);
-            return;
-        }
-        channel->handleMode(client, cmd, serv);
-    } else {
-        client->handleUserMode(cmd, serv);
+    Channel* channel = serv.getChannel(target);
+    if (!channel) {
+        client->sendError(serv, ERR_NOSUCHCHANNEL);
+        return;
     }
+    if (cmd.parameters.size() == 1){
+        std::string activeModes = channel->getModes();
+        client->send(activeModes, serv);
+        return;
+    }
+    std::vector<std::string>::iterator vIterStr = cmd.parameters.begin();
+    vIterStr++;
+    std::deque<std::string> mode;
+    std::deque<std::string> param;
+    for(; vIterStr != cmd.parameters.end(); ++vIterStr){
+        if (vIterStr->find_first_of(MOD_CHANGE) == std::string::npos){
+            param.push_back(*vIterStr);
+            continue;
+        }
+        for (unsigned int i = 0; i < vIterStr->length(); i++){
+            char mod = (*vIterStr)[i];
+            if (mod == '+' || mod == '-')
+                modifier = mod;
+            else if (modifier == '-' || modifier == '+'){
+                mode.push_back(std::string(1, modifier) + mod);
+            }
+        } 
+    }
+    channel->handleMode(cmd, serv, mode, param);
 }

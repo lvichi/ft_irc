@@ -4,6 +4,7 @@
 #include "../includes/macros.hpp"
 #include "../includes/IrcServ.hpp"
 #include <algorithm>
+#include <deque>
 
 Channel::Channel() : _inviteOnly(false), _topicProtected(false), _hasKey(false), _hasUserLimit(false), _userLimit(0) {}
 
@@ -200,8 +201,33 @@ void Channel::broadcastPrivmsg(Client* sender, const std::string& msg, IrcServ& 
             serv.outgoingMessage((*it)->getFd(), privMsg);
 }
 
-void Channel::handleMode(Client* client, CommandStruct& cmd, IrcServ& serv) {
-    (void)cmd;
-    // Minimal stub: just acknowledge
+//mode needs to check in the 
+
+void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
+        std::deque<std::string> &mode, std::deque<std::string> &param) {
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    for (std::deque<std::string>::iterator it = mode.begin(); it != mode.end(); it++){
+        std::cout << "mode: ";
+        std::cout << *it << std::endl;
+        if (!param.empty()){
+            std::cout << "param: ";
+            std::cout << param.front() << std::endl;
+            param.pop_front();
+        }
+    }
     serv.outgoingMessage(client->getFd(), ":MODE command received\r\n");
+}
+//itkol
+std::string Channel::getModes() const{
+    std::string activeModes = "Current active modes are: ";
+    if (isInviteOnly())
+        activeModes + "i";
+    if (isTopicProtected())
+        activeModes + "t";
+    if (hasKey())
+        activeModes + "k";
+    if (hasUserLimit())
+        activeModes + "l";
+    return activeModes;
 }

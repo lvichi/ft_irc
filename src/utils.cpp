@@ -29,8 +29,3 @@ bool isUsernameInUse(const std::string& user, IrcServ& serv) {
     }
     return false;
 }
-
-t_serverInfo *server(void){
-  static t_serverInfo serv;
-  return &serv;
-}
