@@ -280,7 +280,7 @@ void execQuit(CommandStruct &cmd, IrcServ &serv)
 void execMode(CommandStruct &cmd, IrcServ &serv)
 {
     char modifier = 0;
-  //  unsigned short operations = 0;
+    unsigned short operations = 0;
     Client* client = serv.getClient(cmd.clientFD);
     if (!client) return;
     if (!client->isRegistered()) {
@@ -298,8 +298,7 @@ void execMode(CommandStruct &cmd, IrcServ &serv)
         return;
     }
     if (cmd.parameters.size() == 1){
-        std::string activeModes = channel->getModes();
-        client->send(activeModes, serv);
+        channel->sendMode(client, serv);
         return;
     }
     std::vector<std::string>::iterator vIterStr = cmd.parameters.begin();
@@ -316,6 +315,11 @@ void execMode(CommandStruct &cmd, IrcServ &serv)
             if (mod == '+' || mod == '-')
                 modifier = mod;
             else if (modifier == '-' || modifier == '+'){
+                operations++;
+                if (operations > MAX_OPERATIONS){
+                    client->sendError(serv, ERR_INPUTTOOLONG);
+                    return;
+                }
                 mode.push_back(std::string(1, modifier) + mod);
             }
         } 

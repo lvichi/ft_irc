@@ -39,7 +39,7 @@ public:
     const std::set<Client*>&    getMembers() const;
     const std::set<Client*>&    getOperators() const;
     const std::set<Client*>&    getInvited() const;
-    std::string		        getModes() const;
+    const std::string		getModes() const;
     unsigned int                getUserLimit() const;
     
     bool                        isInviteOnly() const;
@@ -79,6 +79,7 @@ public:
     void                        sendPartMessages(Client* client, const std::string& reason, class IrcServ& server) const;
     void                        sendKickMessage(Client* sender, Client* target, const std::string& msg, IrcServ& serv);
     void                        sendTopic(Client* client, IrcServ& serv);
+    void                        sendMode(Client* client, IrcServ& serv);
     void                        broadcastTopic(Client* client, IrcServ& serv);
     void                        broadcastPrivmsg(Client* sender, const std::string& msg, IrcServ& serv);
     void                        handleMode(CommandStruct& cmd, IrcServ& serv, std::deque<std::string> &mode, std::deque<std::string> &param);
