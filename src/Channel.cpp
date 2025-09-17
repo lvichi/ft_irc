@@ -190,7 +190,7 @@ void Channel::sendTopic(Client* client, IrcServ& serv) {
 
 void Channel::sendMode(Client* client, IrcServ& serv) {
     std::stringstream topicMsg;
-    topicMsg << ":" + std::string(SERVER_NAME) + " 324 " + client->getNickname() + " " + getName() + "-> " + getModes();
+    topicMsg << ":" + std::string(SERVER_NAME) + " 324 " + client->getNickname() + " " + getName() + " " + getModes();
     if (hasKey()){
         topicMsg << " ";
         if (isOperator(client))
@@ -315,7 +315,7 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
 }
 //itkol
 const std::string Channel::getModes() const{
-    std::string activeModes = "Current active modes are: ";
+    std::string activeModes = "";
     if (isInviteOnly())
         activeModes += "i";
     if (isTopicProtected())
@@ -324,5 +324,7 @@ const std::string Channel::getModes() const{
         activeModes += "k";
     if (hasUserLimit())
         activeModes += "l";
+    if (!activeModes.empty())
+        activeModes.insert(0, "+");
     return activeModes;
 }
