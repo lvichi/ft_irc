@@ -176,10 +176,10 @@ void execPrivmsg(CommandStruct &cmd, IrcServ &serv)
     }
     std::string target = cmd.parameters[0];
     std::string message = cmd.trailing;
-/*    if (target.empty() || message.empty()) {
+    if (target.empty() || message.empty()) {
         client->sendError(serv, ERR_NORECIPIENT);
         return;
-    }*/
+    }
     if (target[0] == '#') {
         Channel* channel = serv.getChannel(target);
         if (!channel) {
