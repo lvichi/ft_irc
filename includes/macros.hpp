@@ -25,6 +25,7 @@
 #define CHANNEL_PREFIX "#&!+"
 #define MOD_CHANGE "-+"
 #define ALLOWED_MODES "itkol"
+#define MAX_OPERATIONS 3
 
 //colour prints
 
@@ -173,7 +174,7 @@ typedef enum e_mode{
 	T_MODE,
 	K_MODE,
 	O_MODE,
-	L_MODE
+	L_MODE,
 } t_mode;
 
 bool isSpecial(unsigned char c);

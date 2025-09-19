@@ -4,6 +4,7 @@
 #include "../includes/macros.hpp"
 #include "../includes/IrcServ.hpp"
 #include <algorithm>
+#include <deque>
 
 Channel::Channel() : _inviteOnly(false), _topicProtected(false), _hasKey(false), _hasUserLimit(false), _userLimit(0) {}
 
@@ -187,6 +188,23 @@ void Channel::sendTopic(Client* client, IrcServ& serv) {
     serv.outgoingMessage(client->getFd(), topicMsg);
 }
 
+void Channel::sendMode(Client* client, IrcServ& serv) {
+    std::stringstream topicMsg;
+    topicMsg << ":" + std::string(SERVER_NAME) + " 324 " + client->getNickname() + " " + getName() + " " + getModes();
+    if (hasKey()){
+        topicMsg << " ";
+        if (isOperator(client))
+            topicMsg << getKey();
+        else
+            topicMsg << "***";
+    }
+    if (hasUserLimit()){
+        topicMsg << " " << getUserLimit();
+    }
+    topicMsg << "\r\n";
+    serv.outgoingMessage(client->getFd(), topicMsg.str());
+}
+
 void Channel::broadcastTopic(Client* client, IrcServ& serv) {
     std::string topicMsg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " TOPIC " + getName() + " :" + getTopic() + "\r\n";
     for (std::set<Client*>::iterator it = _members.begin(); it != _members.end(); ++it)
@@ -200,8 +218,113 @@ void Channel::broadcastPrivmsg(Client* sender, const std::string& msg, IrcServ& 
             serv.outgoingMessage((*it)->getFd(), privMsg);
 }
 
-void Channel::handleMode(Client* client, CommandStruct& cmd, IrcServ& serv) {
-    (void)cmd;
-    // Minimal stub: just acknowledge
+void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
+        std::deque<std::string> &mode, std::deque<std::string> &param) {
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client) return;
+    std::string mStr(ALLOWED_MODES);
+    for (std::deque<std::string>::iterator it = mode.begin(); it != mode.end(); it++){
+        switch(mStr.find_first_of((*it)[1])){
+            case (I_MODE):{
+                if ((*it)[0] == '+' && !isInviteOnly())
+                    setInviteOnly(true);
+                else if ((*it)[0] == '-')
+                    setInviteOnly(false);
+                break;
+            }
+            case (T_MODE):{
+                if ((*it)[0] == '+' && !isTopicProtected())
+                    setTopicProtected(true);
+                else if ((*it)[0] == '-')
+                    setTopicProtected(false);
+                break;
+            }
+            case (K_MODE):{
+                if (param.empty()){
+                    client->sendError(serv, ERR_NEEDMOREPARAMS);
+                    return;
+                }
+                if ((*it)[0] == '+' && !hasKey()){
+                    setKey(param.front());
+                    param.pop_front();
+                    setHasKey(true);
+                }
+                else if ((*it)[0] == '-' && hasKey()){
+                    if (param.front() == getKey()){
+                        param.pop_front();
+                        setKey(std::string(""));
+                        setHasKey(false);
+                    }
+                    else{
+                        client->sendError(serv, ERR_BADCHANNELKEY);
+                        return;
+                    }
+                }
+                break;
+            }
+            case (O_MODE):{
+                if (param.empty()){
+                    client->sendError(serv, ERR_NEEDMOREPARAMS);
+                    return;
+                }
+                Client *opToBe = serv.getClientByNick(param.front());
+                if (!opToBe){
+                    client->sendError(serv, ERR_NOSUCHNICK);
+                    return;
+                }
+                if (!isMember(opToBe)){
+                    client->sendError(serv, ERR_NOTONCHANNEL);
+                    return;
+                }
+                param.pop_front();
+                if ((*it)[0] == '+' && !isOperator(opToBe))
+                    addOperator(opToBe);
+                else if ((*it)[0] == '-' && isOperator(opToBe))
+                    removeOperator(opToBe);
+                break;
+            }
+            case (L_MODE):{
+                if ((*it)[0] == '+'){
+                    if (param.empty() 
+                            || param.front().find_first_not_of(DIGITS) != std::string::npos){
+                        client->sendError(serv, ERR_NEEDMOREPARAMS);
+                        return;
+                    }
+                    unsigned long limit = std::strtoul(param.front().c_str(), 0, 10);
+                    param.pop_front();
+                    if (limit > CHANNEL_MAX || limit == 0){
+                        client->sendError(serv, ERR_INPUTTOOLONG);
+                        return;
+                    }
+                    setUserLimit(limit);
+                    setHasUserLimit(true);
+                }
+                else if ((*it)[0] == '-'){
+                    setUserLimit(CHANNEL_MAX);
+                    setHasUserLimit(false);
+                }
+                break;
+            }
+            default:{
+                client->sendError(serv, ERR_UNKNOWNMODE);
+                break;
+            }
+        }
+    }
     serv.outgoingMessage(client->getFd(), ":MODE command received\r\n");
+}
+//itkol
+const std::string Channel::getModes() const{
+    std::string activeModes = "";
+    if (isInviteOnly())
+        activeModes += "i";
+    if (isTopicProtected())
+        activeModes += "t";
+    if (hasKey())
+        activeModes += "k";
+    if (hasUserLimit())
+        activeModes += "l";
+    if (!activeModes.empty())
+        activeModes.insert(0, "+");
+    return activeModes;
 }

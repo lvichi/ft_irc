@@ -275,24 +275,22 @@ bool checkMode(CommandStruct &cmd, IrcServ &serv){
     return false;
   }
   if (cmd.parameters.size() > 1){
-    std::string modeString(cmd.parameters[1]);
-    if (modeString.find_first_not_of(ALLOWED_MODES MOD_CHANGE) != modeString.npos || 
-	(std::string(MOD_CHANGE).find_first_of(modeString[0]) == std::string::npos)){
-      cmd.errorCode = ERR_UNKNOWNMODE;
-      return false;
-    }
     if (!channel->isOperator(client)){
       cmd.errorCode = ERR_CHANOPRIVSNEEDED;
       return false;
     }
-    if ((modeString.find_first_of("ok")) != modeString.npos 
-	&& cmd.parameters.size() < 3){
-      cmd.errorCode = ERR_NEEDMOREPARAMS;
-      return false;
+    std::vector<std::string>::iterator modeString = cmd.parameters.begin();
+    modeString++;
+    if (modeString->find_first_of(MOD_CHANGE) == std::string::npos){
+	cmd.errorCode = ERR_UNKNOWNMODE;
+	return false;
     }
-    if (modeString.find_first_of('l') != modeString.npos){
-      if (modeString[0] == '+' && cmd.parameters.size() < 3){
-	cmd.errorCode = ERR_NEEDMOREPARAMS;
+    for (; modeString != cmd.parameters.end(); modeString++){
+      if (modeString->find_first_of(MOD_CHANGE) == std::string::npos)
+	continue;
+      if (modeString->find_first_of(MOD_CHANGE) != modeString->npos
+	  && modeString->find_first_of(ALLOWED_MODES) == modeString->npos){
+	cmd.errorCode = ERR_UNKNOWNMODE;
 	return false;
       }
     }
