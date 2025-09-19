@@ -217,10 +217,8 @@ void IrcServ::sendMessages( pollfd& clientFD )
   bytesSent = send( clientFD.fd, buffer.c_str(), buffer.size(), 0 );
 
   if ( bytesSent <= 0 ) {
-    if ( errno != EAGAIN && errno != EWOULDBLOCK ) {
-      std::cerr << "Error sending message to client. fd: " << clientFD.fd << std::endl;
-      closeClient( clientFD );
-    }
+    std::cerr << "Error sending message to client. fd: " << clientFD.fd << std::endl;
+    closeClient( clientFD );
     return;
   }
 

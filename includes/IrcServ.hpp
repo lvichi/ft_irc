@@ -19,7 +19,7 @@
 #include <map>          // std::map
 #include <cstdlib>      // std::strtod
 #include <csignal>      // std::signal, SIGINT, SIGTERM
-#include <cerrno>       // errno, EAGAIN, EWOULDBLOCK
+#include <cerrno>       // EWOULDBLOCK
 #include <fcntl.h>      // fcntl, F_SETFL, O_NONBLOCK
 #include <poll.h>       // struct pollfd
 #include <sys/socket.h> // socket, AF_INET, AF_INET6, SOCK_STREAM
