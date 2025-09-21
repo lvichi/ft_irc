@@ -42,6 +42,7 @@ public:
     void send(const std::string &message, IrcServ &server) const;
     void sendInvite(IrcServ& serv, const std::string& channelName);
     void sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv);
+    void sendQuit(IrcServ& serv, const std::string& quitMessage);
 
     std::string getFullPrefix() const;  // "nick!user@host"
     void sendError(IrcServ &server, t_error errorCode, const std::string& message) const;

@@ -1,4 +1,5 @@
 #include "../includes/Client.hpp"
+#include "../includes/Channel.hpp"
 #include "../includes/macros.hpp"
 #include <cstring>
 #include <sstream>
@@ -88,9 +89,8 @@ void Client::sendError(IrcServ &server, t_error errorCode) const {
             break;
         }
     }
-    
-    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " * " + 
-                       (_nickname) + " " + message;
+
+    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + message;
     send(reply, server);
 }
 
@@ -113,8 +113,28 @@ void Client::sendInvite(IrcServ& serv, const std::string& channelName) {
 }
 
 void Client::sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv) {
-    std::string privMsg = ":" + sender->getNickname() + "!" + sender->getUsername() + "@" + sender->getHostname() + " PRIVMSG " + getNickname() + " :" + msg + "\r\n";
+    std::string privMsg = ":" + sender->getFullPrefix() + " PRIVMSG " + getNickname() + " :" + msg + "\r\n";
     serv.outgoingMessage(getFd(), privMsg);
+}
+
+void Client::sendQuit(IrcServ& serv, const std::string& quitMessage) {
+    std::string quitMsg = ":" + getFullPrefix() + " QUIT :" + quitMessage + "\r\n";
+
+    std::set<std::string> channels = _channels;    
+    for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
+        Channel* channel = serv.getChannel(*it);
+        if (channel) {
+            const std::set<Client*>& members = channel->getMembers();
+            for (std::set<Client*>::const_iterator mit = members.begin(); mit != members.end(); ++mit) {
+                if (*mit != this) {
+                    serv.outgoingMessage((*mit)->getFd(), quitMsg);
+                }
+            }
+            channel->removeMember(this);
+            if (channel->isEmpty()) serv.removeChannel(*it);
+        }
+    }
+    _channels.clear();
 }
 
 std::set<std::string> Client::getChannels() const {
