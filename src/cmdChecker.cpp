@@ -74,8 +74,11 @@ bool checkNick(CommandStruct &cmd, IrcServ &serv){
 
 //join need to check for +i and +k;
 bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
-  (void)serv;
-
+ Client *client = serv.getClient(cmd.clientFD); 
+  if (!client){
+    cmd.errorCode = ERR_NOORIGIN;
+    return false;
+  }
   if(cmd.parameters.empty()){
     cmd.errorCode = ERR_NEEDMOREPARAMS;
     return false;
@@ -91,7 +94,7 @@ bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
   if (!chn){
     return true;
   }
-  else if (chn->isInviteOnly()){ //+i
+  else if (chn->isInviteOnly() && !chn->isInvited(client)){ //+i
     cmd.errorCode = ERR_INVITEONLYCHAN;
     return false;
   }
@@ -214,6 +217,7 @@ bool checkInvite(CommandStruct &cmd, IrcServ &serv) {
     cmd.errorCode = ERR_CHANOPRIVSNEEDED;
     return false;
   }
+  std::cout << "this is ok" << std::endl;
   return true;
 }
 
