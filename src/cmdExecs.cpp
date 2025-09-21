@@ -122,10 +122,10 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
         client->sendError(serv, ERR_NOSUCHCHANNEL);
         return;
     }
-   /* if (!channel->isOperator(client)) {
+    if (!channel->isOperator(client) && channel->isInviteOnly()) {
         client->sendError(serv, ERR_CHANOPRIVSNEEDED);
         return;
-    }*/
+    }    
     Client* target = serv.getClientByNick(targetNick);
     if (!target) {
         client->sendError(serv, ERR_NOSUCHNICK);
@@ -259,7 +259,6 @@ void execQuit(CommandStruct &cmd, IrcServ &serv)
     std::string quitMessage = cmd.trailing.empty() ? "Client Quit" : cmd.trailing;
     client->sendQuit(serv, quitMessage);
     std::cout << "Client " << (client->getNickname().empty() ? "unknown" : client->getNickname()) << " quit: " << quitMessage << std::endl;
-    serv.removeClient(cmd.clientFD);
 }
 
 //static ssize_t getModeChange(std::string &modeString){
