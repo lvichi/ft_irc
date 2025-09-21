@@ -41,7 +41,7 @@ public:
     void authenticatePassword();
 
     void send(const std::string &message, IrcServ &server) const;
-    void sendInvite(IrcServ& serv, const std::string& channelName);
+    void sendInvite(IrcServ& serv, Client* inviter, const std::string& channelName);
     void sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv);
     void sendQuit(IrcServ& serv, const std::string& quitMessage);
 

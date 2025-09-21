@@ -144,9 +144,12 @@ bool Client::canRegister() const {
     return _passwordAuthenticated && !_nickname.empty() && !_username.empty() && !_registered;
 }
 
-void Client::sendInvite(IrcServ& serv, const std::string& channelName) {
-    std::string msg = ":" + std::string(SERVER_NAME) + " 341 " + getNickname() + " " + channelName + "\r\n";
-    serv.outgoingMessage(getFd(), msg);
+void Client::sendInvite(IrcServ& serv, Client* inviter, const std::string& channelName) {
+    std::string inviteMsg = ":" + inviter->getFullPrefix() + " INVITE " + getNickname() + " " + channelName + "\r\n";
+    serv.outgoingMessage(getFd(), inviteMsg);
+    
+    std::string replyMsg = ":" + std::string(SERVER_NAME) + " 341 " + inviter->getNickname() + " " + getNickname() + " " + channelName + "\r\n";
+    serv.outgoingMessage(inviter->getFd(), replyMsg);
 }
 
 void Client::sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv) {

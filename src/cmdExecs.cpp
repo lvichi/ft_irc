@@ -135,7 +135,8 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
         channel->sendError(client, serv, ERR_USERONCHANNEL);
         return;
     }
-    target->sendInvite(serv, channelName);
+    target->sendInvite(serv, client, channelName);
+    channel->addInvited(target);
 }
 
 void execTopic(CommandStruct &cmd, IrcServ &serv)
