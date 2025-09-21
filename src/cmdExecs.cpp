@@ -259,6 +259,7 @@ void execQuit(CommandStruct &cmd, IrcServ &serv)
     std::string quitMessage = cmd.trailing.empty() ? "Client Quit" : cmd.trailing;
     client->sendQuit(serv, quitMessage);
     std::cout << "Client " << (client->getNickname().empty() ? "unknown" : client->getNickname()) << " quit: " << quitMessage << std::endl;
+    serv.closeClient(client->getFd());
 }
 
 //static ssize_t getModeChange(std::string &modeString){
