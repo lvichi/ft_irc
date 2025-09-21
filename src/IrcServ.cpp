@@ -255,7 +255,9 @@ void IrcServ::removeClient( int fd )
 {
   std::map<int, Client*>::iterator it = clients.find(fd);
   if ( it != clients.end() ) {
-    delete it->second;
+    Client* client = it->second;
+    client->sendQuit(*this, "Client disconnected");
+    delete client;
     clients.erase(it);
   }
 }

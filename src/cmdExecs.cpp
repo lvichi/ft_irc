@@ -255,21 +255,7 @@ void execQuit(CommandStruct &cmd, IrcServ &serv)
     Client* client = serv.getClient(cmd.clientFD);
     if (!client) return;
     std::string quitMessage = cmd.trailing.empty() ? "Client Quit" : cmd.trailing;
-    const std::set<std::string>& channels = client->getChannels();
-    std::string quitReply = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname() + " QUIT :" + quitMessage + "\r\n";
-    for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
-        Channel* channel = serv.getChannel(*it);
-        if (channel) {
-            const std::set<Client*>& members = channel->getMembers();
-            for (std::set<Client*>::const_iterator mit = members.begin(); mit != members.end(); ++mit) {
-                if (*mit != client) {
-                    serv.outgoingMessage((*mit)->getFd(), quitReply);
-                }
-            }
-            channel->removeMember(client);
-            if (channel->isEmpty()) serv.removeChannel(*it);
-        }
-    }
+    client->sendQuit(serv, quitMessage);
     std::cout << "Client " << (client->getNickname().empty() ? "unknown" : client->getNickname()) << " quit: " << quitMessage << std::endl;
     serv.removeClient(cmd.clientFD);
 }

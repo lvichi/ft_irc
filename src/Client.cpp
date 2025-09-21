@@ -1,4 +1,5 @@
 #include "../includes/Client.hpp"
+#include "../includes/Channel.hpp"
 #include "../includes/macros.hpp"
 #include <cstring>
 #include <sstream>
@@ -113,8 +114,25 @@ void Client::sendInvite(IrcServ& serv, const std::string& channelName) {
 }
 
 void Client::sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv) {
-    std::string privMsg = ":" + sender->getNickname() + "!" + sender->getUsername() + "@" + sender->getHostname() + " PRIVMSG " + getNickname() + " :" + msg + "\r\n";
+    std::string privMsg = ":" + sender->getFullPrefix() + " PRIVMSG " + getNickname() + " :" + msg + "\r\n";
     serv.outgoingMessage(getFd(), privMsg);
+}
+
+void Client::sendQuit(IrcServ& serv, const std::string& quitMessage) {
+    std::string quitMsg = ":" + getFullPrefix() + " QUIT :" + quitMessage + "\r\n";
+    for (std::set<std::string>::const_iterator it = _channels.begin(); it != _channels.end(); ++it) {
+        Channel* channel = serv.getChannel(*it);
+        if (channel) {
+            const std::set<Client*>& members = channel->getMembers();
+            for (std::set<Client*>::const_iterator mit = members.begin(); mit != members.end(); ++mit) {
+                if (*mit != this) {
+                    serv.outgoingMessage((*mit)->getFd(), quitMsg);
+                }
+            }
+            channel->removeMember(this);
+            if (channel->isEmpty()) serv.removeChannel(*it);
+        }
+    }
 }
 
 std::set<std::string> Client::getChannels() const {
