@@ -53,7 +53,6 @@ class IrcServ
     static void     handleSigint( int );
     void            createServerSocket();
     void            connectClient();
-    void            closeClient( pollfd& clientFD );
     std::string     receiveMessages( pollfd& clientFD );
     void            sendMessages( pollfd& clientFD );
 
@@ -65,6 +64,7 @@ class IrcServ
     void            outgoingMessage( int clientFD, const std::string& message );
     bool            isPasswordValid( const std::string& pass ) const;
     bool            isDebug() const;
+    void            closeClient( int fd );
     
     // Client management
     void            addClient( int fd );

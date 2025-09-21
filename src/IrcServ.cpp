@@ -147,17 +147,22 @@ void IrcServ::connectClient()
 }
 
 
-void IrcServ::closeClient( pollfd& clientFD )
+void IrcServ::closeClient( int fd )
 {
-  std::cout << "Closed client connection. fd: " << clientFD.fd << std::endl;
+  std::vector<pollfd>::iterator clientFD;
+  for ( clientFD = poolFDs.begin(); clientFD != poolFDs.end(); ++clientFD ) {
+    if ( clientFD->fd == fd )
+      break;
+  }
+  std::cout << "Closed client connection. fd: " << clientFD->fd << std::endl;
 
-  removeClient( clientFD.fd );
+  removeClient( clientFD->fd );
 
-  close( clientFD.fd );
-  fdBuffers.erase( clientFD.fd );
-  outgoingMessages.erase( clientFD.fd );
+  close( clientFD->fd );
+  fdBuffers.erase( clientFD->fd );
+  outgoingMessages.erase( clientFD->fd );
 
-  clientFD.fd = -1;
+  clientFD->fd = -1;
 }
 
 
@@ -173,7 +178,7 @@ std::string IrcServ::receiveMessages( pollfd& clientFD )
     if ( bytesRead < 0 )
       std::cerr << "Error reading from client. fd: " << clientFD.fd << std::endl;
 
-    closeClient( clientFD );
+    closeClient( clientFD.fd );
 
     return message;
   }
@@ -197,7 +202,7 @@ std::string IrcServ::receiveMessages( pollfd& clientFD )
 
   if ( fdBuffers[clientFD.fd].size() > IRC_BUFFER_SIZE ) {
     std::cerr << "Error: Buffer overflow. fd: " << clientFD.fd << std::endl;
-    closeClient( clientFD );
+    closeClient( clientFD.fd );
   }
 
   return message;
@@ -210,7 +215,7 @@ void IrcServ::sendMessages( pollfd& clientFD )
   int            bytesSent;
 
   if ( buffer.empty() ) {
-    closeClient( clientFD );
+    closeClient( clientFD.fd );
     return;
   }
 
@@ -218,7 +223,7 @@ void IrcServ::sendMessages( pollfd& clientFD )
 
   if ( bytesSent <= 0 ) {
     std::cerr << "Error sending message to client. fd: " << clientFD.fd << std::endl;
-    closeClient( clientFD );
+    closeClient( clientFD.fd );
     return;
   }
 
