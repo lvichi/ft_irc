@@ -128,7 +128,7 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
     }    
     Client* target = serv.getClientByNick(targetNick);
     if (!target) {
-        client->sendError(serv, ERR_NOSUCHNICK);
+        channel->sendError(client, serv, ERR_NOSUCHNICK);
         return;
     }
     if (channel->isMember(target)) {
