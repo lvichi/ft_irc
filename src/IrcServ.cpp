@@ -154,6 +154,10 @@ void IrcServ::closeClient( int fd )
     if ( clientFD->fd == fd )
       break;
   }
+
+  if ( clientFD == poolFDs.end() )
+    return;
+
   std::cout << "Closed client connection. fd: " << clientFD->fd << std::endl;
 
   removeClient( clientFD->fd );
