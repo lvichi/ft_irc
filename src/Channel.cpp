@@ -77,16 +77,9 @@ bool Channel::isInvited(Client* client) const {
     return _invited.find(client) != _invited.end();
 }
 
-bool Channel::canJoin(Client* client, const std::string& key) const {
+bool Channel::canJoin(Client* client) const {
     if (_hasUserLimit && _members.size() >= _userLimit)
         return false;
-    
-    if (_inviteOnly && !isInvited(client))
-        return false;
-    
-    if (_hasKey && key != _key)
-        return false;
-    
     return true;
 }
 

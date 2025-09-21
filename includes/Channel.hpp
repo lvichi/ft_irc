@@ -62,7 +62,7 @@ public:
     bool                        isMember(Client* client) const;
     bool                        isOperator(Client* client) const;
     bool                        isInvited(Client* client) const;
-    bool                        canJoin(Client* client, const std::string& key = "") const;
+    bool                        canJoin(Client* client) const;
     
     void                        addMember(Client* client);
     void                        removeMember(Client* client);

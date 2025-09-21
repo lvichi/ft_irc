@@ -125,7 +125,7 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
     if (!channel->isOperator(client) && channel->isInviteOnly()) {
         channel->sendError(client, serv, ERR_CHANOPRIVSNEEDED);
         return;
-    }    
+    }
     Client* target = serv.getClientByNick(targetNick);
     if (!target) {
         channel->sendError(client, serv, ERR_NOSUCHNICK);
@@ -221,7 +221,7 @@ void  execJoin(CommandStruct &cmd, IrcServ &serv)
     channel = serv.createChannel(channelName);
   }
 
-  if (!channel->canJoin(client, key)) {
+  if (!channel->canJoin(client)) {
     channel->sendError(client, serv, ERR_CHANNELISFULL);
     return;
   }
