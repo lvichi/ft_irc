@@ -100,7 +100,7 @@ bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
   }
   else if (chn->hasKey()){ // +k
     if (cmd.parameters.size() < 2){
-      cmd.errorCode = ERR_NEEDMOREPARAMS;
+      cmd.errorCode = ERR_BADCHANNELKEY;
       return false;
     }
     std::vector<std::string>::iterator key(cmd.parameters.begin());
