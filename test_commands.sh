@@ -23,8 +23,8 @@ echo "=== Testando Comandos IRC ==="
     echo "MODE #testchannel +it"
     sleep 1.5
     echo "MODE #testchannel"
-    sleep 1.5
-    echo "MODE #testchannel +l 30"
+	sleep 1.5
+	echo "MODE #testchannel +l 30"
     sleep 1.5
     echo "MODE #testchannel +o cat"
     sleep 1.5

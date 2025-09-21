@@ -222,21 +222,31 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
         std::deque<std::string> &mode, std::deque<std::string> &param) {
     Client* client = serv.getClient(cmd.clientFD);
     if (!client) return;
-    std::string mStr(ALLOWED_MODES);
+	std::string modeChange;
+	std::string mStr(ALLOWED_MODES);
     for (std::deque<std::string>::iterator it = mode.begin(); it != mode.end(); it++){
+		modeChange = ":" + std::string(SERVER_NAME) + client->getNickname() + getName() + " MODE " + getName() + " ";
         switch(mStr.find_first_of((*it)[1])){
             case (I_MODE):{
-                if ((*it)[0] == '+' && !isInviteOnly())
+                if ((*it)[0] == '+' && !isInviteOnly()){
                     setInviteOnly(true);
-                else if ((*it)[0] == '-')
+					modeChange += *it;
+				}
+                else if ((*it)[0] == '-'){
+					modeChange += *it;
                     setInviteOnly(false);
+				}
                 break;
             }
             case (T_MODE):{
-                if ((*it)[0] == '+' && !isTopicProtected())
+                if ((*it)[0] == '+' && !isTopicProtected()){
+					modeChange += *it;
                     setTopicProtected(true);
-                else if ((*it)[0] == '-')
+				}
+                else if ((*it)[0] == '-'){
+					modeChange += *it;
                     setTopicProtected(false);
+				}
                 break;
             }
             case (K_MODE):{
@@ -246,6 +256,7 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                 }
                 if ((*it)[0] == '+' && !hasKey()){
                     setKey(param.front());
+					modeChange += *it + " " + param[0];
                     param.pop_front();
                     setHasKey(true);
                 }
@@ -253,6 +264,7 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                     if (param.front() == getKey()){
                         param.pop_front();
                         setKey(std::string(""));
+						modeChange += *it;
                         setHasKey(false);
                     }
                     else{
@@ -277,10 +289,14 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                     return;
                 }
                 param.pop_front();
-                if ((*it)[0] == '+' && !isOperator(opToBe))
+                if ((*it)[0] == '+' && !isOperator(opToBe)){
+					modeChange += *it + " " + opToBe->getNickname();
                     addOperator(opToBe);
-                else if ((*it)[0] == '-' && isOperator(opToBe))
+				}
+                else if ((*it)[0] == '-' && isOperator(opToBe)){
+					modeChange += *it + " " + opToBe->getNickname();
                     removeOperator(opToBe);
+				}
                 break;
             }
             case (L_MODE):{
@@ -291,17 +307,19 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                         return;
                     }
                     unsigned long limit = std::strtoul(param.front().c_str(), 0, 10);
-                    param.pop_front();
                     if (limit > CHANNEL_MAX || limit == 0){
                         client->sendError(serv, ERR_INPUTTOOLONG);
                         return;
                     }
                     setUserLimit(limit);
                     setHasUserLimit(true);
+					modeChange += *it + " " + param[0];
+                    param.pop_front();
                 }
                 else if ((*it)[0] == '-'){
                     setUserLimit(CHANNEL_MAX);
                     setHasUserLimit(false);
+					modeChange += *it;
                 }
                 break;
             }
@@ -310,8 +328,9 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                 break;
             }
         }
+		modeChange += CRLF;
+		broadcast(modeChange, serv);
     }
-    serv.outgoingMessage(client->getFd(), ":MODE command received\r\n");
 }
 //itkol
 const std::string Channel::getModes() const{

@@ -28,6 +28,8 @@ $(OBJS): $(FILES)
 	@mkdir -p obj
 	@cd obj && $(CPP) $(CFLAGS) -c ../$(FILES) -I ../$(INCLUDES)
 
+leak:
+	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) 6667 abc
 clean:
 	@$(RM) $(OBJS) obj
 

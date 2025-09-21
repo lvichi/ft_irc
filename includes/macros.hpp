@@ -15,7 +15,7 @@
 
 #define BELL "\a"
 #define PARAM_MAX 14
-#define NICK_MAX 9
+#define NICK_MAX 15
 #define CRLF "\r\n"
 #define SPECIAL "[]\\`^{}"
 #define HYPHEN "-"

@@ -89,8 +89,8 @@ void Client::sendError(IrcServ &server, t_error errorCode) const {
         }
     }
     
-    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + 
-                       (_nickname.empty() ? "*" : _nickname) + " " + message;
+    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " * " + 
+                       (_nickname) + " " + message;
     send(reply, server);
 }
 
