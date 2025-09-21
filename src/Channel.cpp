@@ -78,6 +78,7 @@ bool Channel::isInvited(Client* client) const {
 }
 
 bool Channel::canJoin(Client* client) const {
+    (void)client;
     if (_hasUserLimit && _members.size() >= _userLimit)
         return false;
     return true;
