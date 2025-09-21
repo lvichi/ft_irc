@@ -101,7 +101,6 @@ void Channel::removeMember(Client* client) {
     _members.erase(client);
     _operators.erase(client);
     _invited.erase(client);
-    client->removeChannel(_name);
 }
 
 void Channel::addOperator(Client* client) {

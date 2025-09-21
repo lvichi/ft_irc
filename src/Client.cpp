@@ -120,7 +120,9 @@ void Client::sendPrivmsg(Client* sender, const std::string& msg, IrcServ& serv) 
 
 void Client::sendQuit(IrcServ& serv, const std::string& quitMessage) {
     std::string quitMsg = ":" + getFullPrefix() + " QUIT :" + quitMessage + "\r\n";
-    for (std::set<std::string>::const_iterator it = _channels.begin(); it != _channels.end(); ++it) {
+
+    std::set<std::string> channels = _channels;    
+    for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
         Channel* channel = serv.getChannel(*it);
         if (channel) {
             const std::set<Client*>& members = channel->getMembers();
@@ -133,6 +135,7 @@ void Client::sendQuit(IrcServ& serv, const std::string& quitMessage) {
             if (channel->isEmpty()) serv.removeChannel(*it);
         }
     }
+    _channels.clear();
 }
 
 std::set<std::string> Client::getChannels() const {

@@ -103,6 +103,7 @@ void execKick(CommandStruct &cmd, IrcServ &serv)
     std::string kickMsg = cmd.trailing.empty() ? targetNick : cmd.trailing;
     channel->sendKickMessage(client, target, kickMsg, serv);
     channel->removeMember(target);
+    target->removeChannel(channelName);
     if (channel->isEmpty()) serv.removeChannel(channelName);
 }
 
@@ -244,6 +245,7 @@ void  execPart(CommandStruct &cmd, IrcServ &serv)
   Channel* channel = serv.getChannel(channelName);
   channel->sendPartMessages(client, partMessage, serv);
   channel->removeMember(client);
+  client->removeChannel(channelName);  // Remover o canal da lista do cliente explicitamente
 
   if (channel->isEmpty()) {
     serv.removeChannel(channelName);
