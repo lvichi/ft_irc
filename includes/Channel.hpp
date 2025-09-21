@@ -4,6 +4,7 @@
 #include <set>
 #include <map>
 #include <deque>
+#include "macros.hpp"
 
 class Client;
 class IrcServ;
@@ -83,4 +84,6 @@ public:
     void                        broadcastTopic(Client* client, IrcServ& serv);
     void                        broadcastPrivmsg(Client* sender, const std::string& msg, IrcServ& serv);
     void                        handleMode(CommandStruct& cmd, IrcServ& serv, std::deque<std::string> &mode, std::deque<std::string> &param);
+    void                        sendError(Client* client, IrcServ& serv, t_error errorCode) const;
+    void                        sendError(Client* client, IrcServ& serv, t_error errorCode, const std::string& message) const;
 };

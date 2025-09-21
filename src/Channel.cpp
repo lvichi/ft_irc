@@ -5,6 +5,7 @@
 #include "../includes/IrcServ.hpp"
 #include <algorithm>
 #include <deque>
+#include <sstream>
 
 Channel::Channel() : _inviteOnly(false), _topicProtected(false), _hasKey(false), _hasUserLimit(false), _userLimit(0) {}
 
@@ -250,7 +251,7 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
             }
             case (K_MODE):{
                 if (param.empty()){
-                    client->sendError(serv, ERR_NEEDMOREPARAMS);
+                    sendError(client, serv, ERR_NEEDMOREPARAMS);
                     return;
                 }
                 if ((*it)[0] == '+' && !hasKey()){
@@ -267,7 +268,7 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                         setHasKey(false);
                     }
                     else{
-                        client->sendError(serv, ERR_BADCHANNELKEY);
+                        sendError(client, serv, ERR_BADCHANNELKEY);
                         return;
                     }
                 }
@@ -275,16 +276,16 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
             }
             case (O_MODE):{
                 if (param.empty()){
-                    client->sendError(serv, ERR_NEEDMOREPARAMS);
+                    sendError(client, serv, ERR_NEEDMOREPARAMS);
                     return;
                 }
                 Client *opToBe = serv.getClientByNick(param.front());
                 if (!opToBe){
-                    client->sendError(serv, ERR_NOSUCHNICK);
+                    sendError(client, serv, ERR_NOSUCHNICK);
                     return;
                 }
                 if (!isMember(opToBe)){
-                    client->sendError(serv, ERR_NOTONCHANNEL);
+                    sendError(client, serv, ERR_NOTONCHANNEL);
                     return;
                 }
                 param.pop_front();
@@ -302,12 +303,12 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                 if ((*it)[0] == '+'){
                     if (param.empty() 
                             || param.front().find_first_not_of(DIGITS) != std::string::npos){
-                        client->sendError(serv, ERR_NEEDMOREPARAMS);
+                        sendError(client, serv, ERR_NEEDMOREPARAMS);
                         return;
                     }
                     unsigned long limit = std::strtoul(param.front().c_str(), 0, 10);
                     if (limit > CHANNEL_MAX || limit == 0){
-                        client->sendError(serv, ERR_INPUTTOOLONG);
+                        sendError(client, serv, ERR_INPUTTOOLONG);
                         return;
                     }
                     setUserLimit(limit);
@@ -323,7 +324,7 @@ void Channel::handleMode(CommandStruct& cmd, IrcServ& serv,
                 break;
             }
             default:{
-                client->sendError(serv, ERR_UNKNOWNMODE);
+                sendError(client, serv, ERR_UNKNOWNMODE);
                 break;
             }
         }
@@ -345,4 +346,54 @@ const std::string Channel::getModes() const{
     if (!activeModes.empty())
         activeModes.insert(0, "+");
     return activeModes;
+}
+
+void Channel::sendError(Client* client, IrcServ& serv, t_error errorCode) const {
+    std::ostringstream oss;
+    oss << errorCode;
+    
+    const t_error errorCodes[] = {
+        ERR_NOSUCHNICK, ERR_NOSUCHCHANNEL, ERR_CANNOTSENDTOCHAN, ERR_TOOMANYCHANNELS,
+        ERR_UNKNOWNCOMMAND, ERR_NONICKNAMEGIVEN, ERR_ERRONEUSNICKNAME, ERR_NICKNAMEINUSE,
+        ERR_USERNOTINCHANNEL, ERR_NOTONCHANNEL, ERR_USERONCHANNEL, ERR_NOTREGISTERED,
+        ERR_NEEDMOREPARAMS, ERR_ALREADYREGISTERED, ERR_PASSWDMISMATCH, ERR_CHANNELISFULL,
+        ERR_UNKNOWNMODE, ERR_INVITEONLYCHAN, ERR_BANNEDFROMCHAN, ERR_BADCHANNELKEY,
+        ERR_CHANOPRIVSNEEDED
+    };
+    
+    const char* errorMessages[] = {
+        CMT_NOSUCHNICK, CMT_NOSUCHCHANNEL, CMT_CANNOTSENDTOCHAN, CMT_TOOMANYCHANNELS,
+        CMT_UNKNOWNCOMMAND, CMT_NONICKNAMEGIVEN, CMT_ERRONEUSNICKNAME, CMT_NICKNAMEINUSE,
+        CMT_USERNOTINCHANNEL, CMT_NOTONCHANNEL, CMT_USERONCHANNEL, CMT_NOTREGISTERED,
+        CMT_NEEDMOREPARAMS, CMT_ALREADYREGISTERED, CMT_PASSWDMISMATCH, CMT_CHANNELISFULL,
+        CMT_UNKNOWNMODE, CMT_INVITEONLYCHAN, CMT_BANNEDFROMCHAN, CMT_BADCHANNELKEY,
+        CMT_CHANOPRIVSNEEDED
+    };
+    
+    const int numErrors = sizeof(errorCodes) / sizeof(errorCodes[0]);
+    
+    std::string message = ":Unknown error";
+    for (int i = 0; i < numErrors; i++) {
+        if (errorCodes[i] == errorCode) {
+            message = errorMessages[i];
+            break;
+        }
+    }
+
+    // Para erros relacionados a canal, incluir o nome do canal na mensagem
+    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + 
+                       (client->getNickname().empty() ? "*" : client->getNickname()) + " " + 
+                       _name + " " + message;
+    client->send(reply, serv);
+}
+
+void Channel::sendError(Client* client, IrcServ& serv, t_error errorCode, const std::string& message) const {
+    std::ostringstream oss;
+    oss << errorCode;
+    
+    // Para erros relacionados a canal, incluir o nome do canal na mensagem
+    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + 
+                       (client->getNickname().empty() ? "*" : client->getNickname()) + " " + 
+                       _name + " " + message;
+    client->send(reply, serv);
 }

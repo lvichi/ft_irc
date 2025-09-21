@@ -92,12 +92,12 @@ void execKick(CommandStruct &cmd, IrcServ &serv)
         return;
     }
     if (!channel->isOperator(client)) {
-        client->sendError(serv, ERR_CHANOPRIVSNEEDED);
+        channel->sendError(client, serv, ERR_CHANOPRIVSNEEDED);
         return;
     }
     Client* target = serv.getClientByNick(targetNick);
     if (!target || !channel->isMember(target)) {
-        client->sendError(serv, ERR_USERNOTINCHANNEL);
+        channel->sendError(client, serv, ERR_USERNOTINCHANNEL);
         return;
     }
     std::string kickMsg = cmd.trailing.empty() ? targetNick : cmd.trailing;
@@ -123,7 +123,7 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
         return;
     }
     if (!channel->isOperator(client) && channel->isInviteOnly()) {
-        client->sendError(serv, ERR_CHANOPRIVSNEEDED);
+        channel->sendError(client, serv, ERR_CHANOPRIVSNEEDED);
         return;
     }    
     Client* target = serv.getClientByNick(targetNick);
@@ -132,7 +132,7 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
         return;
     }
     if (channel->isMember(target)) {
-        client->sendError(serv, ERR_USERONCHANNEL);
+        channel->sendError(client, serv, ERR_USERONCHANNEL);
         return;
     }
     target->sendInvite(serv, channelName);
@@ -157,7 +157,7 @@ void execTopic(CommandStruct &cmd, IrcServ &serv)
         return;
     }
     if (channel->isTopicProtected() && !channel->isOperator(client)) {
-        client->sendError(serv, ERR_CHANOPRIVSNEEDED);
+        channel->sendError(client, serv, ERR_CHANOPRIVSNEEDED);
         return;
     }
     if (cmd.trailing == "\"\"")
@@ -188,7 +188,7 @@ void execPrivmsg(CommandStruct &cmd, IrcServ &serv)
             return;
         }
         if (!channel->isMember(client)) {
-            client->sendError(serv, ERR_CANNOTSENDTOCHAN);
+            channel->sendError(client, serv, ERR_CANNOTSENDTOCHAN);
             return;
         }
         channel->broadcastPrivmsg(client, message, serv);
@@ -221,7 +221,7 @@ void  execJoin(CommandStruct &cmd, IrcServ &serv)
   }
 
   if (!channel->canJoin(client, key)) {
-    client->sendError(serv, ERR_CHANNELISFULL);
+    channel->sendError(client, serv, ERR_CHANNELISFULL);
     return;
   }
 
