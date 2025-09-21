@@ -86,6 +86,7 @@ bool checkJoin(CommandStruct &cmd, IrcServ &serv) {
     cmd.errorCode = ERR_NOSUCHCHANNEL;
     return false;
   }
+  cmd.channelName = channelName;
   Channel *chn = serv.getChannel(channelName);
   if (!chn){
     return true;
@@ -130,6 +131,7 @@ bool checkPart(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_NOSUCHCHANNEL;
     return false;
   }
+  cmd.channelName = channelName;
   if (!chn->isMember(client)) {
     cmd.errorCode = ERR_NOTONCHANNEL;
     return false;
@@ -163,6 +165,7 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
 	  cmd.errorCode = ERR_NOSUCHCHANNEL;
 	  return false;
   }
+  cmd.channelName = cName;
   if (!chn->isOperator(clt)){
     cmd.errorCode = ERR_CHANOPRIVSNEEDED;
     return false;
@@ -178,7 +181,7 @@ bool checkKick(CommandStruct &cmd,  IrcServ&serv){
 }
 
 //need to implement +i check for it;
-bool checkInvite(CommandStruct &cmd, IrcServ &serv){
+bool checkInvite(CommandStruct &cmd, IrcServ &serv) {
   Client *client = serv.getClient(cmd.clientFD);
   if (!client){
     cmd.errorCode = ERR_NOORIGIN;
@@ -198,11 +201,12 @@ bool checkInvite(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_NOSUCHCHANNEL;
     return false;
   }
-  else if (!chan->isMember(client)){
+  cmd.channelName = chan->getName();
+  if (!chan->isMember(client)){
     cmd.errorCode = ERR_NOTONCHANNEL;
     return false;
   }
-  else if (!isNicknameInUse(user, serv)){
+  if (!isNicknameInUse(user, serv)){
     cmd.errorCode = ERR_NOSUCHNICK;
     return false;
   }
@@ -229,6 +233,7 @@ bool checkTopic(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_NOSUCHCHANNEL;
     return false;
   }
+  cmd.channelName = channel->getName();
   if (!channel->isMember(client)){
     cmd.errorCode = ERR_NOTONCHANNEL;
     return false;
@@ -270,6 +275,7 @@ bool checkMode(CommandStruct &cmd, IrcServ &serv){
     cmd.errorCode = ERR_NOSUCHCHANNEL;
     return false;
   }
+  cmd.channelName = cName;
   if (!channel->isMember(client)){
     cmd.errorCode = ERR_NOTONCHANNEL;
     return false;

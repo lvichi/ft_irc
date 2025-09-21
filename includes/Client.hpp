@@ -4,6 +4,7 @@
 #include <set>
 #include "../includes/IrcServ.hpp"
 #include "../includes/macros.hpp"
+#include "../includes/parseCommands.hpp"
 
 class Client {
 private:
@@ -46,6 +47,7 @@ public:
 
     std::string getFullPrefix() const;  // "nick!user@host"
     void sendError(IrcServ &server, t_error errorCode, const std::string& message) const;
+    void sendError(IrcServ &server, t_error errorCode, CommandStruct &cmd) const;
     void sendError(IrcServ &server, t_error errorCode) const;
     void sendWelcome(IrcServ &server) const;
     bool canRegister() const;

@@ -27,7 +27,7 @@ static int findAndExec(CommandStruct &command, IrcServ &serv){
           ef[i](command, serv);
           return 0;
       } else {
-        serv.getClient(command.clientFD)->sendError(serv, (t_error)command.errorCode);
+        serv.getClient(command.clientFD)->sendError(serv, (t_error)command.errorCode, command);
         return -2;
       }
     }
@@ -45,7 +45,7 @@ void executeCommands( std::list<CommandStruct>& commands, IrcServ& server )
       it->errorCode = UNKNOWN;
       std::cout << "\e[1;31m >> Command UNKNOWN: " << it->command << " << \e[0m" << std::endl;
 
-      server.getClient(it->clientFD)->sendError(server, ERR_UNKNOWNCOMMAND);
+      server.getClient(it->clientFD)->sendError(server, ERR_UNKNOWNCOMMAND, *it);
       continue ;
     }
   }

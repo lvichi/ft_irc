@@ -94,6 +94,43 @@ void Client::sendError(IrcServ &server, t_error errorCode) const {
     send(reply, server);
 }
 
+void Client::sendError(IrcServ &server, t_error errorCode, CommandStruct &cmd) const {
+    std::ostringstream oss;
+    oss << errorCode;
+    
+    const t_error errorCodes[] = {
+        ERR_NOSUCHNICK, ERR_NOSUCHCHANNEL, ERR_CANNOTSENDTOCHAN, ERR_TOOMANYCHANNELS,
+        ERR_UNKNOWNCOMMAND, ERR_NONICKNAMEGIVEN, ERR_ERRONEUSNICKNAME, ERR_NICKNAMEINUSE,
+        ERR_USERNOTINCHANNEL, ERR_NOTONCHANNEL, ERR_USERONCHANNEL, ERR_NOTREGISTERED,
+        ERR_NEEDMOREPARAMS, ERR_ALREADYREGISTERED, ERR_PASSWDMISMATCH, ERR_CHANNELISFULL,
+        ERR_UNKNOWNMODE, ERR_INVITEONLYCHAN, ERR_BANNEDFROMCHAN, ERR_BADCHANNELKEY,
+        ERR_CHANOPRIVSNEEDED
+    };
+    
+    const char* errorMessages[] = {
+        CMT_NOSUCHNICK, CMT_NOSUCHCHANNEL, CMT_CANNOTSENDTOCHAN, CMT_TOOMANYCHANNELS,
+        CMT_UNKNOWNCOMMAND, CMT_NONICKNAMEGIVEN, CMT_ERRONEUSNICKNAME, CMT_NICKNAMEINUSE,
+        CMT_USERNOTINCHANNEL, CMT_NOTONCHANNEL, CMT_USERONCHANNEL, CMT_NOTREGISTERED,
+        CMT_NEEDMOREPARAMS, CMT_ALREADYREGISTERED, CMT_PASSWDMISMATCH, CMT_CHANNELISFULL,
+        CMT_UNKNOWNMODE, CMT_INVITEONLYCHAN, CMT_BANNEDFROMCHAN, CMT_BADCHANNELKEY,
+        CMT_CHANOPRIVSNEEDED
+    };
+    
+    const int numErrors = sizeof(errorCodes) / sizeof(errorCodes[0]);
+    
+    std::string message = ":Unknown error";
+    for (int i = 0; i < numErrors; i++) {
+        if (errorCodes[i] == errorCode) {
+            message = errorMessages[i];
+            break;
+        }
+    }
+
+    std::cout << "Error sent to " << cmd.channelName << ": " << message << std::endl;
+    std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + (_nickname.empty() ? "*" : _nickname) + " " + (cmd.channelName.empty() ?  "" : cmd.channelName + " ") + message;
+    send(reply, server);
+}
+
 void Client::sendWelcome(IrcServ &server) const {
     std::string welcome = ":" + std::string(SERVER_NAME) + " " + RPL_WELCOME + " " + _nickname + 
                           " :Welcome to the Internet Relay Network " + _nickname;

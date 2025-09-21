@@ -115,8 +115,8 @@ void execInvite(CommandStruct &cmd, IrcServ &serv)
         client->sendError(serv, ERR_NOTREGISTERED);
         return;
     }
-    std::string targetNick = cmd.parameters[1];
-    std::string channelName = cmd.parameters[0];
+    std::string targetNick = cmd.parameters[0];
+    std::string channelName = cmd.parameters[1];
     Channel* channel = serv.getChannel(channelName);
     if (!channel) {
         client->sendError(serv, ERR_NOSUCHCHANNEL);
