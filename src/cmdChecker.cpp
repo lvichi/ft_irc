@@ -245,6 +245,12 @@ bool checkTopic(CommandStruct &cmd, IrcServ &serv){
   return true;
 }
 
+bool checkNotice(CommandStruct &cmd, IrcServ &serv){
+  (void)serv;
+  (void)cmd;
+  return true;
+}
+
 bool checkPrivmsg(CommandStruct &cmd, IrcServ &serv){
   (void)serv;
   if(cmd.parameters.empty()){

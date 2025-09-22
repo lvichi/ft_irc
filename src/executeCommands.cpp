@@ -12,15 +12,15 @@ static void normalizeInput(std::string &cmd){
 //note: only check pass being implemented currently, execs are all placeholders
 //note: list of clients, server pass, nicklist, channel list, mode list
 static int findAndExec(CommandStruct &command, IrcServ &serv){
-  const char *cmds[12] = {"PING", "PRIVMSG", "PASS", "NICK", "USER", "JOIN",
-    "PART", "QUIT", "KICK", "INVITE", "TOPIC", "MODE"};
+  const char *cmds[13] = {"PING", "PRIVMSG", "PASS", "NICK", "USER", "JOIN",
+    "PART", "QUIT", "KICK", "INVITE", "TOPIC", "MODE", "NOTICE"};
   const checks cf = {checkPing, checkPrivmsg, checkPass, checkNick, checkUser,
-    checkJoin, checkPart, checkQuit, checkKick, checkInvite, checkTopic, checkMode};
+    checkJoin, checkPart, checkQuit, checkKick, checkInvite, checkTopic, checkMode, checkNotice};
   const execs ef = {execPing, execPrivmsg, execPass, execNick, execUser, execJoin,
-    execPart, execQuit, execKick, execInvite, execTopic, execMode};
+    execPart, execQuit, execKick, execInvite, execTopic, execMode, execNotice};
 
   normalizeInput(command.command);
-  for (int i = 0; i < 12; i++){
+  for (int i = 0; i < 13; i++){
     if (command.command == cmds[i]){
       if (cf[i](command, serv) && command.errorCode == 0) {
         std::cout << RED "Command: " << command.command << RST << std::endl;

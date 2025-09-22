@@ -168,6 +168,35 @@ void execTopic(CommandStruct &cmd, IrcServ &serv)
     channel->broadcastTopic(client, serv);
 }
 
+void execNotice(CommandStruct &cmd, IrcServ &serv)
+{
+    Client* client = serv.getClient(cmd.clientFD);
+    if (!client){
+        return;
+    }
+    std::string target = cmd.parameters[0];
+    std::string message = cmd.trailing;
+    if (target.empty() || message.empty()) {
+        return;
+    }
+    if (target[0] == '#') {
+        Channel* channel = serv.getChannel(target);
+        if (!channel) {
+            return;
+        }
+        if (!channel->isMember(client)) {
+            return;
+        }
+        channel->broadcastPrivmsg(client, message, serv);
+    } else {
+        Client* dest = serv.getClientByNick(target);
+        if (!dest) {
+            return;
+        }
+        dest->sendPrivmsg(client, message, serv);
+    }
+}
+
 void execPrivmsg(CommandStruct &cmd, IrcServ &serv)
 {
     Client* client = serv.getClient(cmd.clientFD);
