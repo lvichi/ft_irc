@@ -211,7 +211,7 @@ void execPrivmsg(CommandStruct &cmd, IrcServ &serv)
         client->sendError(serv, ERR_NORECIPIENT);
         return;
     }*/
-    if (target[0] == '#') {
+    if (std::string(ALLOWED_CHAN_PREFIX).find_first_of(target[0]) != std::string::npos) {
         Channel* channel = serv.getChannel(target);
         if (!channel) {
             client->sendError(serv, ERR_NOSUCHCHANNEL);
