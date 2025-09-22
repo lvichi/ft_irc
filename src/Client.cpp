@@ -126,7 +126,6 @@ void Client::sendError(IrcServ &server, t_error errorCode, CommandStruct &cmd) c
         }
     }
 
-    std::cout << "Error sent to " << cmd.channelName << ": " << message << std::endl;
     std::string reply = ":" + std::string(SERVER_NAME) + " " + oss.str() + " " + (_nickname.empty() ? "*" : _nickname) + " " + (cmd.channelName.empty() ?  "" : cmd.channelName + " ") + message;
     send(reply, server);
 }
